@@ -291,8 +291,14 @@ async function fetchJobs(request, env) {
       { error: "No jobs found for that search right now." },
       404,
     );
+  const terms = q.toLowerCase().split(/\s+/).filter((t) => t.length > 2);
+  for (const j of jobs) {
+    const title = (j.title || "").toLowerCase(), desc = (j.description || "").toLowerCase();
+    j._relevance = terms.reduce((n, t) => n + (title.includes(t) ? 4 : 0) + (desc.includes(t) ? 1 : 0), 0);
+  }
   const seen = new Set();
-  const unique = jobs.filter((j) => { const key = (j.url || "") + "|" + (j.title || ""); if (seen.has(key)) return false; seen.add(key); return true; });
+  const unique = jobs.filter((j) => { const key = (j.url || "") + "|" + (j.title || ""); if (seen.has(key) || j._relevance === 0) return false; seen.add(key); return true; }).sort((a,b) => b._relevance - a._relevance);
+  for (const j of unique) delete j._relevance;
   return jsonResponse({ jobs: unique.slice(0, 40) });
 }
 async function analyze(request, env) {
