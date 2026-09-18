@@ -257,6 +257,7 @@ btn.textContent="Pull from link";
 });
 });
 var lastJobs=[];
+var jobsShown=0;
 document.getElementById("jobSearchBtn").addEventListener("click",function(){
 var q=document.getElementById("jobQuery").value.trim();
 var hint=document.getElementById("jobSearchHint");
@@ -267,16 +268,16 @@ hint.textContent="Searching six free job sources...";
 fetch(API+"/api/jobs?q="+encodeURIComponent(q)).then(function(resp){
 return resp.json().then(function(data){
 if(!resp.ok||data.error){throw new Error(data.error||"Search failed.");}
-lastJobs=data.jobs||[];
+lastJobs=data.jobs||[];jobsShown=Math.min(20,lastJobs.length);
 renderJobs();
-hint.textContent=lastJobs.length+" jobs found. Pick one to tailor your resume to it.";
+hint.textContent=lastJobs.length+" jobs found across free sources. Showing "+jobsShown+".";
 });
 }).catch(function(e){hint.innerHTML="<span class=err>"+esc(e.message)+"</span>";}).then(function(){btn.disabled=false;btn.textContent="Search jobs";});
 });
 function renderJobs(){
 var list=document.getElementById("jobList");
 list.innerHTML="";
-for(var i=0;i<lastJobs.length;i++){
+for(var i=0;i<jobsShown;i++){
 (function(idx){
 var job=lastJobs[idx];
 var d=document.createElement("div");d.className="jobitem";
@@ -294,6 +295,7 @@ d.appendChild(left);d.appendChild(b);
 list.appendChild(d);
 })(i);
 }
+if(jobsShown<lastJobs.length){var more=document.createElement("button");more.className="btn";more.style.marginTop="14px";more.textContent="Load 20 more";more.onclick=function(){jobsShown=Math.min(jobsShown+20,lastJobs.length);renderJobs();document.getElementById("jobSearchHint").textContent=lastJobs.length+" jobs found across free sources. Showing "+jobsShown+".";};list.appendChild(more);}
 }
 function esc(s){var d=document.createElement("div");d.textContent=s;return d.innerHTML;}
 document.getElementById("analyzeBtn").addEventListener("click",function(){
