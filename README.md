@@ -1,6 +1,6 @@
 # ResumeFit
 
-AI-powered resume analyzer and tailor. Upload your resume as PDF, DOCX, or TXT and add a job description (or pull the job straight from a LinkedIn / Naukri link) and get:
+AI-powered resume analyzer and tailor with a stepped Upload -> Job -> Results flow. Upload your resume as PDF, DOCX, or TXT and add a job description (or pull the job straight from a LinkedIn / Naukri link) and get:
 
 - A match score with a recruiter-style verdict
 - Flaws and weak points in your resume for that job
