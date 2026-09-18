@@ -2,7 +2,7 @@
 
 AI-powered resume analyzer and tailor with a stepped Upload -> Job -> Results flow. Upload your resume as PDF, DOCX, or TXT and add a job description (or pull the job straight from a LinkedIn / Naukri link) and get:
 
-- A match score with a recruiter-style verdict
+- An overall match score plus Skills, Experience, ATS Keywords, Impact, and Clarity sub-scores
 - Flaws and weak points in your resume for that job
 - Fluff points to cut, with reasons
 - Missing ATS keywords
