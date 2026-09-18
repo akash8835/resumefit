@@ -57,6 +57,7 @@ ul.clean{list-style:none}
 ul.clean li{background:var(--card2);border-left:3px solid var(--red);border-radius:8px;padding:10px 12px;margin-bottom:8px;font-size:14px}
 ul.cuts li{border-left-color:var(--amber)}
 ul.tips li{border-left-color:var(--green)}
+.recommendations{display:grid;gap:10px}.rec{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px;display:grid;grid-template-columns:84px 1fr;gap:12px}.priority{align-self:start;text-align:center;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:700;text-transform:uppercase}.priority.high{background:#4a2528;color:var(--red)}.priority.medium{background:#493b24;color:var(--amber)}.priority.low{background:#203c2b;color:var(--green)}.rec strong{display:block;margin-bottom:3px}.rec p{color:var(--muted);font-size:13px}@media(max-width:520px){.rec{grid-template-columns:1fr}.priority{width:max-content}}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chip{background:var(--card2);border:1px solid var(--border);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--green)}
 pre.resume{white-space:pre-wrap;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:16px;font-size:14px;font-family:inherit;max-height:520px;overflow:auto}
@@ -131,15 +132,9 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:40px}
 <div class="subscores" id="subscores"></div>
 </div>
 </div>
-<div class="cols">
-<div class="card">
-<h2>Flaws &amp; weak points</h2>
-<ul class="clean" id="flawsList"></ul>
-</div>
-<div class="card">
-<h2>Cut these</h2>
-<ul class="clean cuts" id="cutsList"></ul>
-</div>
+<div class="card" style="margin-bottom:16px">
+<h2>Priority recommendations</h2>
+<div class="recommendations" id="recommendations"></div>
 </div>
 <div class="card" style="margin-bottom:16px">
 <h2>Missing keywords (ATS)</h2>
@@ -327,8 +322,9 @@ document.getElementById("verdict").textContent=d.verdict||"";
 var subNames={skills:"Skills match",experience:"Experience relevance",keywords:"ATS keywords",impact:"Impact & metrics",clarity:"Clarity & structure"};
 var sub=d.subscores||{};var sd=document.getElementById("subscores");sd.innerHTML="";
 for(var key in subNames){var val=Math.max(0,Math.min(100,parseInt(sub[key],10)||0));var item=document.createElement("div");item.innerHTML='<div class="subscore-head"><span>'+subNames[key]+'</span><strong>'+val+'</strong></div><div class="scorebar"><span style="width:'+val+'%"></span></div>';sd.appendChild(item);}
-fillList("flawsList",d.flaws);
-fillList("cutsList",d.cuts);
+var rd=document.getElementById("recommendations");rd.innerHTML="";var recs=d.recommendations||[];
+for(var ri=0;ri<recs.length;ri++){var r=recs[ri]||{};var pri=String(r.priority||"medium").toLowerCase();if(["high","medium","low"].indexOf(pri)<0)pri="medium";var el=document.createElement("div");el.className="rec";var badge=document.createElement("span");badge.className="priority "+pri;badge.textContent=pri;var body=document.createElement("div");var title=document.createElement("strong");title.textContent=r.action||"Improve this section";var why=document.createElement("p");why.textContent=r.why||"";body.appendChild(title);body.appendChild(why);el.appendChild(badge);el.appendChild(body);rd.appendChild(el);}
+if(!recs.length){rd.innerHTML='<span class="hint">No priority recommendations returned.</span>';}
 fillList("tipsList",d.recruiter_tips);
 var kd=document.getElementById("keywordsDiv");
 kd.innerHTML="";
