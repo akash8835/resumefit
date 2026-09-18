@@ -13,8 +13,16 @@ header{text-align:center;padding:44px 0 28px}
 h1{font-size:32px;letter-spacing:-.5px}
 h1 span{color:var(--accent)}
 .sub{color:var(--muted);margin-top:8px;font-size:15px}
+.steps{display:flex;align-items:center;justify-content:center;gap:8px;margin:0 auto 24px;max-width:640px}
+.stepdot{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;font-weight:600}
+.stepnum{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--card2);border:1px solid var(--border)}
+.stepdot.active{color:var(--text)}.stepdot.active .stepnum{background:var(--accent);border-color:var(--accent);color:#fff}
+.stepline{height:1px;width:80px;background:var(--border)}
+.step-panel{display:none}.step-panel.active{display:block}
+.step-actions{display:flex;gap:10px;margin-top:22px}.step-actions .go{margin:0;max-width:none}.step-actions .btn{padding:15px 22px;font-size:15px}
+.upload-card{max-width:680px;margin:0 auto;text-align:center;padding:34px 24px}.upload-card .row{justify-content:center}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-@media(max-width:820px){.grid{grid-template-columns:1fr}}
+@media(max-width:820px){.grid{grid-template-columns:1fr}.stepline{width:32px}.stepdot span:last-child{display:none}}
 .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px}
 .card h2{font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px}
 textarea{width:100%;min-height:220px;background:var(--card2);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:12px;font-size:14px;font-family:inherit;resize:vertical}
@@ -61,15 +69,25 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:40px}
 <h1>Resume<span>Fit</span></h1>
 <p class="sub">Upload your resume and add the job. Get a match score, the flaws, the fluff to cut, recruiter tips, and a tailored rewrite.</p>
 </header>
-<div class="grid">
-<div class="card">
+<div class="steps" aria-label="Resume analysis progress">
+<div class="stepdot active" data-step-dot="1"><span class="stepnum">1</span><span>Upload</span></div><span class="stepline"></span>
+<div class="stepdot" data-step-dot="2"><span class="stepnum">2</span><span>Job</span></div><span class="stepline"></span>
+<div class="stepdot" data-step-dot="3"><span class="stepnum">3</span><span>Results</span></div>
+</div>
+<section class="step-panel active" id="uploadStep">
+<div class="card upload-card">
 <h2>Your resume</h2>
+<p class="hint" style="margin-bottom:18px">Upload one PDF, DOCX, or TXT resume to begin.</p>
 <textarea id="resumeInput" hidden aria-hidden="true"></textarea>
 <div class="row" style="margin-top:0">
 <label class="filebtn">Upload PDF / DOCX / TXT<input type="file" id="fileInput" accept=".pdf,.docx,.txt" style="display:none"></label>
 <span class="hint" id="fileHint">Choose a resume file to analyze.</span>
 </div>
+<div class="step-actions"><button class="go" id="toJobBtn" disabled>Continue to job</button></div>
 </div>
+</section>
+<section class="step-panel" id="jobStep">
+<div class="grid">
 <div class="card">
 <h2>Job description</h2>
 <div class="row" style="margin-top:0;margin-bottom:10px;flex-wrap:nowrap">
@@ -79,8 +97,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:40px}
 <div class="hint" id="pullHint" style="margin-bottom:8px"></div>
 <textarea id="jdInput" placeholder="...or paste the full job description here"></textarea>
 </div>
-</div>
-<div class="card" style="margin-top:16px">
+<div class="card">
 <h2>Or browse live jobs</h2>
 <div class="row" style="margin-top:0;flex-wrap:nowrap">
 <input type="url" id="jobQuery" placeholder="e.g. associate product manager">
@@ -89,8 +106,11 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:40px}
 <div class="hint" id="jobSearchHint" style="margin-top:8px"></div>
 <div id="jobList"></div>
 </div>
-<button class="go" id="analyzeBtn">Analyze my resume</button>
+</div>
+<div class="step-actions"><button class="btn" id="backToUploadBtn">Back</button><button class="go" id="analyzeBtn">Analyze my resume</button></div>
 <div id="status"></div>
+</section>
+<section class="step-panel" id="resultsStep">
 <div id="results">
 <div class="scorecard">
 <div class="ring" id="ring">--</div>
@@ -127,6 +147,8 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:40px}
 </div>
 </div>
 </div>
+<div class="step-actions"><button class="btn" id="backToJobBtn">Back to job</button><button class="btn" id="startOverBtn">Start over</button></div>
+</section>
 <footer>Runs on free-tier Cloudflare Workers AI. Your text is sent only to the AI model for analysis.</footer>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -138,15 +160,28 @@ var statusEl=document.getElementById("status");
 var fileInput=document.getElementById("fileInput");
 var resumeInput=document.getElementById("resumeInput");
 var jdInput=document.getElementById("jdInput");
+function goStep(n){
+var panels=[document.getElementById("uploadStep"),document.getElementById("jobStep"),document.getElementById("resultsStep")];
+for(var i=0;i<panels.length;i++){panels[i].classList.toggle("active",i===n-1);}
+var dots=document.querySelectorAll("[data-step-dot]");
+for(var j=0;j<dots.length;j++){dots[j].classList.toggle("active",parseInt(dots[j].getAttribute("data-step-dot"),10)===n);}
+window.scrollTo({top:0,behavior:"smooth"});
+}
+document.getElementById("toJobBtn").addEventListener("click",function(){if(resumeInput.value.trim())goStep(2);});
+document.getElementById("backToUploadBtn").addEventListener("click",function(){goStep(1);});
+document.getElementById("backToJobBtn").addEventListener("click",function(){goStep(2);});
+document.getElementById("startOverBtn").addEventListener("click",function(){document.getElementById("results").style.display="none";goStep(1);});
 if(window.pdfjsLib){pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";}
 fileInput.addEventListener("change",function(){
 var f=fileInput.files[0];
 if(!f)return;
 var name=f.name.toLowerCase();
 document.getElementById("fileHint").textContent="Reading "+f.name+"...";
+document.getElementById("toJobBtn").disabled=true;
+resumeInput.value="";
 if(name.slice(-4)===".txt"){
 var r=new FileReader();
-r.onload=function(){if(!String(r.result||"").trim()){document.getElementById("fileHint").innerHTML="<span class=err>Could not read text from that TXT file.</span>";return;}resumeInput.value=r.result;document.getElementById("fileHint").textContent=f.name+" loaded.";};
+r.onload=function(){if(!String(r.result||"").trim()){document.getElementById("fileHint").innerHTML="<span class=err>Could not read text from that TXT file.</span>";return;}resumeInput.value=r.result;document.getElementById("fileHint").textContent=f.name+" loaded.";document.getElementById("toJobBtn").disabled=false;};
 r.onerror=function(){document.getElementById("fileHint").innerHTML="<span class=err>Could not read that TXT file.</span>";};
 r.readAsText(f);
 }else if(name.slice(-4)===".pdf"){
@@ -167,7 +202,7 @@ pages[p-1]=s;
 });});
 })(i);
 }
-chain.then(function(){var text=pages.join("\\n\\n").trim();if(!text){throw new Error("No readable text found");}resumeInput.value=text;document.getElementById("fileHint").textContent=f.name+" loaded ("+pdf.numPages+" pages).";}).catch(function(){document.getElementById("fileHint").innerHTML="<span class=err>Could not read text from that PDF.</span>";});
+chain.then(function(){var text=pages.join("\\n\\n").trim();if(!text){throw new Error("No readable text found");}resumeInput.value=text;document.getElementById("fileHint").textContent=f.name+" loaded ("+pdf.numPages+" pages).";document.getElementById("toJobBtn").disabled=false;}).catch(function(){document.getElementById("fileHint").innerHTML="<span class=err>Could not read text from that PDF.</span>";});
 }).catch(function(){document.getElementById("fileHint").innerHTML="<span class=err>Could not read that PDF.</span>";});
 };
 fr.readAsArrayBuffer(f);
@@ -178,6 +213,7 @@ mammoth.extractRawText({arrayBuffer:fr2.result}).then(function(res){
 if(!String(res.value||"").trim()){throw new Error("No readable text found");}
 resumeInput.value=res.value;
 document.getElementById("fileHint").textContent=f.name+" loaded.";
+document.getElementById("toJobBtn").disabled=false;
 }).catch(function(){document.getElementById("fileHint").innerHTML="<span class=err>Could not read text from that DOCX.</span>";});
 };
 fr2.readAsArrayBuffer(f);
@@ -286,7 +322,7 @@ for(var i=0;i<kws.length;i++){var c=document.createElement("span");c.className="
 if(!kws.length){kd.innerHTML="<span class=hint>No major keyword gaps found.</span>";}
 document.getElementById("rewrittenPre").textContent=d.rewritten_resume||"";
 document.getElementById("results").style.display="block";
-document.getElementById("results").scrollIntoView({behavior:"smooth"});
+goStep(3);
 }
 function fillList(id,items){
 var ul=document.getElementById(id);
