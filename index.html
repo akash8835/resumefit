@@ -263,7 +263,7 @@ var hint=document.getElementById("jobSearchHint");
 if(!q){hint.innerHTML="<span class=err>Type a role first.</span>";return;}
 var btn=document.getElementById("jobSearchBtn");
 btn.disabled=true;btn.textContent="Searching...";
-hint.textContent="Searching Remotive, Arbeitnow, and Jooble India...";
+hint.textContent="Searching six free job sources...";
 fetch(API+"/api/jobs?q="+encodeURIComponent(q)).then(function(resp){
 return resp.json().then(function(data){
 if(!resp.ok||data.error){throw new Error(data.error||"Search failed.");}
