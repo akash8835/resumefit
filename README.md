@@ -3,8 +3,7 @@
 AI-powered resume analyzer and tailor with a stepped Upload -> Job -> Results flow. Upload your resume as PDF, DOCX, or TXT and add a job description (or pull the job straight from a LinkedIn / Naukri link) and get:
 
 - An overall match score plus Skills, Experience, ATS Keywords, Impact, and Clarity sub-scores
-- Flaws and weak points in your resume for that job
-- Fluff points to cut, with reasons
+- Priority-ranked actionable recommendations, each with a specific action and reason
 - Missing ATS keywords
 - Recruiter-view tips
 - A fully rewritten, tailored resume you can copy, download as .txt, or print to PDF
