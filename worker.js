@@ -264,14 +264,18 @@ async function fetchJobs(request, env) {
       })
       .catch(() => {}),
   );
-  for (const page of ["1", "2", "3"]) tasks.push(
+  // Jooble supports location search, so fan out across India instead of letting one
+  // high-volume metro dominate the national result set. One page per region keeps
+  // the free API usage bounded while covering the country's main job hubs.
+  const indiaLocations = ["India", "Mumbai", "Delhi NCR", "Pune", "Chennai", "Kolkata"];
+  for (const location of indiaLocations) tasks.push(
     fetch("https://in.jooble.org/api/" + env.JOOBLE_API_KEY, {
       method: "POST",
       headers: { "content-type": "application/json", "User-Agent": UA },
-      body: JSON.stringify({ keywords: q, location: "India", page }),
+      body: JSON.stringify({ keywords: q, location, page: "1" }),
     }).then((r) => (r.ok ? r.json() : null)).then((data) => {
       if (data && Array.isArray(data.jobs)) for (const j of data.jobs)
-        jobs.push({ title: j.title || "", company: j.company || "", location: j.location || "India", url: j.link || "", description: stripHtml(j.snippet || "").slice(0, 4000), source: "Jooble India" });
+        jobs.push({ title: j.title || "", company: j.company || "", location: j.location || location, url: j.link || "", description: stripHtml(j.snippet || "").slice(0, 4000), source: "Jooble India" });
     }).catch(() => {}),
   );
   tasks.push(
@@ -318,8 +322,40 @@ async function fetchJobs(request, env) {
   }
   const seen = new Set();
   const unique = jobs.filter((j) => { const key = (j.url || "") + "|" + (j.title || ""); if (seen.has(key) || j._relevance === 0) return false; seen.add(key); return true; }).sort((a,b) => b._relevance - a._relevance);
-  for (const j of unique) delete j._relevance;
-  return jsonResponse({ jobs: unique.slice(0, 150) });
+
+  // Keep relevance as the primary ordering. Within an equal relevance tier,
+  // round-robin locations so candidates see India's geographic spread early.
+  const regionKey = (location) => {
+    const l = String(location || "remote").toLowerCase();
+    if (/mumbai|navi mumbai|thane/.test(l)) return "Mumbai";
+    if (/delhi|noida|gurgaon|gurugram|ghaziabad/.test(l)) return "Delhi NCR";
+    if (/pune/.test(l)) return "Pune";
+    if (/chennai/.test(l)) return "Chennai";
+    if (/kolkata/.test(l)) return "Kolkata";
+    if (/bangalore|bengaluru/.test(l)) return "Bengaluru";
+    if (/hyderabad/.test(l)) return "Hyderabad";
+    if (/ahmedabad|ahmadabad/.test(l)) return "Ahmedabad";
+    if (/kochi|cochin/.test(l)) return "Kochi";
+    return l.includes("remote") || l.includes("work from home") ? "Remote" : "Other India";
+  };
+  const ranked = [];
+  for (let i = 0; i < unique.length;) {
+    let end = i + 1;
+    while (end < unique.length && unique[end]._relevance === unique[i]._relevance) end++;
+    const buckets = new Map();
+    for (const job of unique.slice(i, end)) {
+      const key = regionKey(job.location);
+      if (!buckets.has(key)) buckets.set(key, []);
+      buckets.get(key).push(job);
+    }
+    while (buckets.size) for (const [key, bucket] of Array.from(buckets)) {
+      ranked.push(bucket.shift());
+      if (!bucket.length) buckets.delete(key);
+    }
+    i = end;
+  }
+  for (const j of ranked) delete j._relevance;
+  return jsonResponse({ jobs: ranked.slice(0, 150) });
 }
 async function analyze(request, env) {
   let body;
