@@ -110,7 +110,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:40px}
 <textarea id="jdInput" placeholder="...or paste the full job description here"></textarea>
 </div>
 <div class="card">
-<h2>Or browse live jobs</h2>
+<h2>Search live jobs</h2>
 <div class="row" style="margin-top:0;flex-wrap:nowrap">
 <input type="url" id="jobQuery" placeholder="e.g. associate product manager">
 <button class="mini" id="jobSearchBtn">Search jobs</button>
@@ -263,7 +263,7 @@ var hint=document.getElementById("jobSearchHint");
 if(!q){hint.innerHTML="<span class=err>Type a role first.</span>";return;}
 var btn=document.getElementById("jobSearchBtn");
 btn.disabled=true;btn.textContent="Searching...";
-hint.textContent="Searching free job boards...";
+hint.textContent="Searching Remotive, Arbeitnow, and Jooble India...";
 fetch(API+"/api/jobs?q="+encodeURIComponent(q)).then(function(resp){
 return resp.json().then(function(data){
 if(!resp.ok||data.error){throw new Error(data.error||"Search failed.");}
