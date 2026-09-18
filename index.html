@@ -59,15 +59,15 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:40px}
 <div class="wrap">
 <header>
 <h1>Resume<span>Fit</span></h1>
-<p class="sub">Paste your resume and the job. Get a match score, the flaws, the fluff to cut, recruiter tips, and a tailored rewrite.</p>
+<p class="sub">Upload your resume and add the job. Get a match score, the flaws, the fluff to cut, recruiter tips, and a tailored rewrite.</p>
 </header>
 <div class="grid">
 <div class="card">
 <h2>Your resume</h2>
-<textarea id="resumeInput" placeholder="Paste your resume text here, or upload a file below..."></textarea>
-<div class="row">
+<textarea id="resumeInput" hidden aria-hidden="true"></textarea>
+<div class="row" style="margin-top:0">
 <label class="filebtn">Upload PDF / DOCX / TXT<input type="file" id="fileInput" accept=".pdf,.docx,.txt" style="display:none"></label>
-<span class="hint" id="fileHint">Text stays editable after upload.</span>
+<span class="hint" id="fileHint">Choose a resume file to analyze.</span>
 </div>
 </div>
 <div class="card">
@@ -146,7 +146,8 @@ var name=f.name.toLowerCase();
 document.getElementById("fileHint").textContent="Reading "+f.name+"...";
 if(name.slice(-4)===".txt"){
 var r=new FileReader();
-r.onload=function(){resumeInput.value=r.result;document.getElementById("fileHint").textContent=f.name+" loaded.";};
+r.onload=function(){if(!String(r.result||"").trim()){document.getElementById("fileHint").innerHTML="<span class=err>Could not read text from that TXT file.</span>";return;}resumeInput.value=r.result;document.getElementById("fileHint").textContent=f.name+" loaded.";};
+r.onerror=function(){document.getElementById("fileHint").innerHTML="<span class=err>Could not read that TXT file.</span>";};
 r.readAsText(f);
 }else if(name.slice(-4)===".pdf"){
 var fr=new FileReader();
@@ -166,21 +167,22 @@ pages[p-1]=s;
 });});
 })(i);
 }
-chain.then(function(){resumeInput.value=pages.join("\\n\\n");document.getElementById("fileHint").textContent=f.name+" loaded ("+pdf.numPages+" pages).";});
-}).catch(function(){document.getElementById("fileHint").textContent="Could not read that PDF. Try pasting the text.";});
+chain.then(function(){var text=pages.join("\\n\\n").trim();if(!text){throw new Error("No readable text found");}resumeInput.value=text;document.getElementById("fileHint").textContent=f.name+" loaded ("+pdf.numPages+" pages).";}).catch(function(){document.getElementById("fileHint").innerHTML="<span class=err>Could not read text from that PDF.</span>";});
+}).catch(function(){document.getElementById("fileHint").innerHTML="<span class=err>Could not read that PDF.</span>";});
 };
 fr.readAsArrayBuffer(f);
 }else if(name.slice(-5)===".docx"){
 var fr2=new FileReader();
 fr2.onload=function(){
 mammoth.extractRawText({arrayBuffer:fr2.result}).then(function(res){
+if(!String(res.value||"").trim()){throw new Error("No readable text found");}
 resumeInput.value=res.value;
 document.getElementById("fileHint").textContent=f.name+" loaded.";
-}).catch(function(){document.getElementById("fileHint").textContent="Could not read that DOCX. Try pasting the text.";});
+}).catch(function(){document.getElementById("fileHint").innerHTML="<span class=err>Could not read text from that DOCX.</span>";});
 };
 fr2.readAsArrayBuffer(f);
 }else{
-document.getElementById("fileHint").textContent="Unsupported file. Use PDF, DOCX or TXT.";
+document.getElementById("fileHint").innerHTML="<span class=err>Unsupported file. Use PDF, DOCX or TXT.</span>";
 }
 });
 document.getElementById("pullBtn").addEventListener("click",function(){
@@ -247,7 +249,7 @@ function esc(s){var d=document.createElement("div");d.textContent=s;return d.inn
 document.getElementById("analyzeBtn").addEventListener("click",function(){
 var resume=resumeInput.value.trim();
 var job=jdInput.value.trim();
-if(!resume||!job){statusEl.innerHTML="<span class=err>Please fill in both your resume and the job description.</span>";return;}
+if(!resume||!job){statusEl.innerHTML="<span class=err>Please upload your resume and add the job description.</span>";return;}
 var btn=document.getElementById("analyzeBtn");
 btn.disabled=true;
 btn.textContent="Analyzing...";
