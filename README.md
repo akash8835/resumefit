@@ -6,7 +6,7 @@ AI-powered resume analyzer and tailor with a stepped Upload -> Job -> Results fl
 - Priority-ranked actionable recommendations, each with a specific action and reason
 - Before/after rewrite cards with Accept and Reject controls for every suggested change
 - JD keyword frequency and resume coverage table
-- Recruiter-view tips
+- Standout Fluff Detector for vague lines and a 10-second Recruiter View with first impression, strongest signal, main concern, and likely decision
 - A fully rewritten, tailored resume you can copy, download as .txt, or print to PDF
 
 Also includes a live job browser (Remotive + Arbeitnow free APIs) so you can pick a real posting and analyze against it.
