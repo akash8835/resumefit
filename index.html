@@ -43,6 +43,14 @@ input[type=url]{width:100%;background:var(--card2);border:1px solid var(--border
 .scorecard{display:flex;gap:18px;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px}
 .ring{width:86px;height:86px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;flex-shrink:0}
 .verdict{font-size:15px}
+.score-dashboard{display:grid;grid-template-columns:230px 1fr;gap:16px;margin-bottom:16px}
+.overall-card{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px}
+.overall-card .ring{width:108px;height:108px;font-size:32px;margin:10px 0}
+.subscore-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px}
+.subscores{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px;margin-top:12px}
+.subscore-head{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px}.subscore-head strong{color:var(--text)}
+.scorebar{height:8px;background:var(--card2);border-radius:99px;overflow:hidden}.scorebar span{display:block;height:100%;border-radius:99px;background:var(--accent)}
+@media(max-width:680px){.score-dashboard{grid-template-columns:1fr}.subscores{grid-template-columns:1fr}}
 .cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
 @media(max-width:820px){.cols{grid-template-columns:1fr}}
 ul.clean{list-style:none}
@@ -112,11 +120,15 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:40px}
 </section>
 <section class="step-panel" id="resultsStep">
 <div id="results">
-<div class="scorecard">
+<div class="score-dashboard">
+<div class="overall-card">
+<div style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Overall match</div>
 <div class="ring" id="ring">--</div>
-<div>
-<div style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Match score</div>
 <div class="verdict" id="verdict"></div>
+</div>
+<div class="subscore-card">
+<h2>Score breakdown</h2>
+<div class="subscores" id="subscores"></div>
 </div>
 </div>
 <div class="cols">
@@ -312,6 +324,9 @@ ring.style.border="5px solid "+col;
 ring.style.color=col;
 ring.textContent=score;
 document.getElementById("verdict").textContent=d.verdict||"";
+var subNames={skills:"Skills match",experience:"Experience relevance",keywords:"ATS keywords",impact:"Impact & metrics",clarity:"Clarity & structure"};
+var sub=d.subscores||{};var sd=document.getElementById("subscores");sd.innerHTML="";
+for(var key in subNames){var val=Math.max(0,Math.min(100,parseInt(sub[key],10)||0));var item=document.createElement("div");item.innerHTML='<div class="subscore-head"><span>'+subNames[key]+'</span><strong>'+val+'</strong></div><div class="scorebar"><span style="width:'+val+'%"></span></div>';sd.appendChild(item);}
 fillList("flawsList",d.flaws);
 fillList("cutsList",d.cuts);
 fillList("tipsList",d.recruiter_tips);
