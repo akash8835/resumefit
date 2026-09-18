@@ -5,7 +5,7 @@ AI-powered resume analyzer and tailor with a stepped Upload -> Job -> Results fl
 - An overall match score plus Skills, Experience, ATS Keywords, Impact, and Clarity sub-scores
 - Priority-ranked actionable recommendations, each with a specific action and reason
 - Before/after rewrite cards with Accept and Reject controls for every suggested change
-- Missing ATS keywords
+- JD keyword frequency and resume coverage table
 - Recruiter-view tips
 - A fully rewritten, tailored resume you can copy, download as .txt, or print to PDF
 
