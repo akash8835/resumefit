@@ -58,6 +58,7 @@ ul.clean li{background:var(--card2);border-left:3px solid var(--red);border-radi
 ul.cuts li{border-left-color:var(--amber)}
 ul.tips li{border-left-color:var(--green)}
 .recommendations{display:grid;gap:10px}.rec{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px;display:grid;grid-template-columns:84px 1fr;gap:12px}.priority{align-self:start;text-align:center;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:700;text-transform:uppercase}.priority.high{background:#4a2528;color:var(--red)}.priority.medium{background:#493b24;color:var(--amber)}.priority.low{background:#203c2b;color:var(--green)}.rec strong{display:block;margin-bottom:3px}.rec p{color:var(--muted);font-size:13px}@media(max-width:520px){.rec{grid-template-columns:1fr}.priority{width:max-content}}
+.keyword-table{display:grid;gap:8px}.keyword-row{display:grid;grid-template-columns:1fr 90px 120px;gap:12px;align-items:center;background:var(--card2);border-radius:8px;padding:10px 12px;font-size:13px}.coverage{font-weight:700}.coverage.covered{color:var(--green)}.coverage.missing{color:var(--red)}@media(max-width:560px){.keyword-row{grid-template-columns:1fr auto}.keyword-row .frequency{display:none}}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chip{background:var(--card2);border:1px solid var(--border);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--green)}
 .rewrite-list{display:grid;gap:12px}.rewrite-change{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:14px}.rewrite-change.accepted{border-color:var(--green)}.rewrite-change.rejected{opacity:.58}.rewrite-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}.rewrite-pane{border-radius:8px;padding:11px;font-size:13px;white-space:pre-wrap}.rewrite-pane.before{background:#2d2225}.rewrite-pane.after{background:#203128}.rewrite-label{font-size:10px;text-transform:uppercase;color:var(--muted);letter-spacing:1px;margin-bottom:6px}.rewrite-reason{font-size:12px;color:var(--muted);margin-top:10px}.decision{display:flex;gap:8px;margin-top:12px}.decision .btn.selected{border-color:var(--accent);background:var(--accent2)}@media(max-width:680px){.rewrite-cols{grid-template-columns:1fr}}
@@ -138,8 +139,8 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:40px}
 <div class="recommendations" id="recommendations"></div>
 </div>
 <div class="card" style="margin-bottom:16px">
-<h2>Missing keywords (ATS)</h2>
-<div class="chips" id="keywordsDiv"></div>
+<h2>JD keyword coverage</h2>
+<div class="keyword-table" id="keywordCoverage"></div>
 </div>
 <div class="card" style="margin-bottom:16px">
 <h2>Recruiter-view tips</h2>
@@ -331,11 +332,9 @@ var rd=document.getElementById("recommendations");rd.innerHTML="";var recs=d.rec
 for(var ri=0;ri<recs.length;ri++){var r=recs[ri]||{};var pri=String(r.priority||"medium").toLowerCase();if(["high","medium","low"].indexOf(pri)<0)pri="medium";var el=document.createElement("div");el.className="rec";var badge=document.createElement("span");badge.className="priority "+pri;badge.textContent=pri;var body=document.createElement("div");var title=document.createElement("strong");title.textContent=r.action||"Improve this section";var why=document.createElement("p");why.textContent=r.why||"";body.appendChild(title);body.appendChild(why);el.appendChild(badge);el.appendChild(body);rd.appendChild(el);}
 if(!recs.length){rd.innerHTML='<span class="hint">No priority recommendations returned.</span>';}
 fillList("tipsList",d.recruiter_tips);
-var kd=document.getElementById("keywordsDiv");
-kd.innerHTML="";
-var kws=d.missing_keywords||[];
-for(var i=0;i<kws.length;i++){var c=document.createElement("span");c.className="chip";c.textContent=kws[i];kd.appendChild(c);}
-if(!kws.length){kd.innerHTML="<span class=hint>No major keyword gaps found.</span>";}
+var kd=document.getElementById("keywordCoverage");kd.innerHTML="";var kws=d.keyword_coverage||[];
+for(var ki=0;ki<kws.length;ki++){var kw=kws[ki]||{};var row=document.createElement("div");row.className="keyword-row";var name=document.createElement("strong");name.textContent=kw.keyword||"";var freq=document.createElement("span");freq.className="frequency";freq.textContent="JD × "+(parseInt(kw.frequency,10)||0);var cov=document.createElement("span");cov.className="coverage "+(kw.covered?"covered":"missing");cov.textContent=kw.covered?"Covered":"Missing";row.appendChild(name);row.appendChild(freq);row.appendChild(cov);kd.appendChild(row);}
+if(!kws.length){kd.innerHTML='<span class="hint">No keyword coverage data returned.</span>';}
 var changes=d.rewrite_changes||[];var ch=document.getElementById("rewriteChanges");ch.innerHTML="";
 for(var ci=0;ci<changes.length;ci++){(function(change){var box=document.createElement("div");box.className="rewrite-change";var cols=document.createElement("div");cols.className="rewrite-cols";var before=document.createElement("div");before.className="rewrite-pane before";before.innerHTML='<div class="rewrite-label">Before</div>';before.appendChild(document.createTextNode(change.before||""));var after=document.createElement("div");after.className="rewrite-pane after";after.innerHTML='<div class="rewrite-label">After</div>';after.appendChild(document.createTextNode(change.after||""));cols.appendChild(before);cols.appendChild(after);box.appendChild(cols);var why=document.createElement("div");why.className="rewrite-reason";why.textContent=change.reason||"";box.appendChild(why);var dec=document.createElement("div");dec.className="decision";var accept=document.createElement("button");accept.className="btn";accept.textContent="Accept";var reject=document.createElement("button");reject.className="btn";reject.textContent="Reject";accept.onclick=function(){box.className="rewrite-change accepted";accept.classList.add("selected");reject.classList.remove("selected");};reject.onclick=function(){box.className="rewrite-change rejected";reject.classList.add("selected");accept.classList.remove("selected");};dec.appendChild(accept);dec.appendChild(reject);box.appendChild(dec);ch.appendChild(box);})(changes[ci]||{});}
 if(!changes.length){ch.innerHTML='<span class="hint">No line-by-line changes returned.</span>';}
