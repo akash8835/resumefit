@@ -9,7 +9,7 @@ AI-powered resume analyzer and tailor with a stepped Upload -> Job -> Results fl
 - Standout Fluff Detector for vague lines and a 10-second Recruiter View with first impression, strongest signal, main concern, and likely decision
 - A fully rewritten, tailored resume you can copy, download as .txt, or print to PDF
 
-Also includes a live job browser (Remotive + Arbeitnow free APIs) so you can pick a real posting and analyze against it.
+Also includes a live job browser (Remotive + Arbeitnow + Jooble India free APIs) so you can pick a real posting and analyze against it.
 
 **Live app:** https://resumefit-app.ashwatthama710.workers.dev
 
@@ -17,7 +17,7 @@ Also includes a live job browser (Remotive + Arbeitnow free APIs) so you can pic
 
 - Single-file [Cloudflare Worker](worker.js) serving both the API and the frontend ([index.html](index.html), embedded gzipped + base64)
 - AI analysis via Cloudflare Workers AI (Llama 3.3 70B) — free tier
-- Job search via Remotive and Arbeitnow public APIs
+- Job search via Remotive, Arbeitnow, and Jooble India; Adzuna is pending account access
 - No database, no build step
 
 ## Deploy your own
