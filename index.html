@@ -186,53 +186,47 @@ document.getElementById("backToUploadBtn").addEventListener("click",function(){g
 document.getElementById("backToJobBtn").addEventListener("click",function(){goStep(2);});
 document.getElementById("startOverBtn").addEventListener("click",function(){document.getElementById("results").style.display="none";goStep(1);});
 if(window.pdfjsLib){pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";}
-fileInput.addEventListener("change",function(){
-var f=fileInput.files[0];
+fileInput.addEventListener("change",async function(){
+var f=fileInput.files&&fileInput.files[0];
 if(!f)return;
 var name=f.name.toLowerCase();
-document.getElementById("fileHint").textContent="Reading "+f.name+"...";
-document.getElementById("toJobBtn").disabled=true;
+var hint=document.getElementById("fileHint");
+var next=document.getElementById("toJobBtn");
+hint.textContent="Reading "+f.name+"...";
+next.disabled=true;
 resumeInput.value="";
+function withTimeout(p){return Promise.race([p,new Promise(function(_,reject){setTimeout(function(){reject(new Error("Reading timed out"));},30000);})]);}
+try{
+var text="";
 if(name.slice(-4)===".txt"){
-var r=new FileReader();
-r.onload=function(){if(!String(r.result||"").trim()){document.getElementById("fileHint").innerHTML="<span class=err>Could not read text from that TXT file.</span>";return;}resumeInput.value=r.result;document.getElementById("fileHint").textContent=f.name+" loaded.";document.getElementById("toJobBtn").disabled=false;};
-r.onerror=function(){document.getElementById("fileHint").innerHTML="<span class=err>Could not read that TXT file.</span>";};
-r.readAsText(f);
+text=await withTimeout(f.text());
 }else if(name.slice(-4)===".pdf"){
-var fr=new FileReader();
-fr.onload=function(){
-var data=new Uint8Array(fr.result);
-pdfjsLib.getDocument({data:data}).promise.then(function(pdf){
+if(!window.pdfjsLib)throw new Error("PDF reader did not load");
+var pdf=await withTimeout(pdfjsLib.getDocument({data:new Uint8Array(await withTimeout(f.arrayBuffer()))}).promise);
 var pages=[];
-var chain=Promise.resolve();
 for(var i=1;i<=pdf.numPages;i++){
-(function(p){
-chain=chain.then(function(){return pdf.getPage(p).then(function(page){
-return page.getTextContent().then(function(tc){
-var s="";
-for(var j=0;j<tc.items.length;j++){s+=tc.items[j].str+" ";}
-pages[p-1]=s;
-});
-});});
-})(i);
+var page=await withTimeout(pdf.getPage(i));
+var tc=await withTimeout(page.getTextContent());
+var line=[];
+for(var j=0;j<tc.items.length;j++)line.push(tc.items[j].str);
+pages.push(line.join(" "));
 }
-chain.then(function(){var text=pages.join("\\n\\n").trim();if(!text){throw new Error("No readable text found");}resumeInput.value=text;document.getElementById("fileHint").textContent=f.name+" loaded ("+pdf.numPages+" pages).";document.getElementById("toJobBtn").disabled=false;}).catch(function(){document.getElementById("fileHint").innerHTML="<span class=err>Could not read text from that PDF.</span>";});
-}).catch(function(){document.getElementById("fileHint").innerHTML="<span class=err>Could not read that PDF.</span>";});
-};
-fr.readAsArrayBuffer(f);
+text=pages.join("\n\n");
 }else if(name.slice(-5)===".docx"){
-var fr2=new FileReader();
-fr2.onload=function(){
-mammoth.extractRawText({arrayBuffer:fr2.result}).then(function(res){
-if(!String(res.value||"").trim()){throw new Error("No readable text found");}
-resumeInput.value=res.value;
-document.getElementById("fileHint").textContent=f.name+" loaded.";
-document.getElementById("toJobBtn").disabled=false;
-}).catch(function(){document.getElementById("fileHint").innerHTML="<span class=err>Could not read text from that DOCX.</span>";});
-};
-fr2.readAsArrayBuffer(f);
+if(!window.mammoth)throw new Error("DOCX reader did not load");
+var res=await withTimeout(mammoth.extractRawText({arrayBuffer:await withTimeout(f.arrayBuffer())}));
+text=res.value||"";
 }else{
-document.getElementById("fileHint").innerHTML="<span class=err>Unsupported file. Use PDF, DOCX or TXT.</span>";
+throw new Error("Unsupported file. Use PDF, DOCX or TXT.");
+}
+text=String(text||"").trim();
+if(!text)throw new Error("No readable text found in this file.");
+resumeInput.value=text;
+hint.textContent=f.name+" loaded"+(name.slice(-4)===".pdf"?".":".");
+next.disabled=false;
+}catch(e){
+hint.innerHTML="<span class=err>"+esc(e&&e.message?e.message:"Could not read that file.")+"</span>";
+next.disabled=true;
 }
 });
 document.getElementById("pullBtn").addEventListener("click",function(){
