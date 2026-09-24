@@ -650,6 +650,14 @@ export class AnalyticsDB extends DurableObject {
     this.sql.exec("CREATE TABLE IF NOT EXISTS shared_resumes (id INTEGER PRIMARY KEY AUTOINCREMENT, consent_ts TEXT NOT NULL, consent_text TEXT, filename TEXT, mime TEXT, file_b64 TEXT, text TEXT, text_hash TEXT, country TEXT, region TEXT, device TEXT)");
     this.sql.exec("CREATE TABLE IF NOT EXISTS analyses (id INTEGER PRIMARY KEY AUTOINCREMENT, ts TEXT NOT NULL, score INTEGER, job_title TEXT, company TEXT, missing TEXT, country TEXT, region TEXT, device TEXT)");
     this.sql.exec("CREATE TABLE IF NOT EXISTS subscribers (id INTEGER PRIMARY KEY AUTOINCREMENT, ts TEXT NOT NULL, email TEXT NOT NULL, country TEXT, region TEXT, device TEXT, source TEXT)");
+    this.sql.exec("CREATE TABLE IF NOT EXISTS admin_users (email TEXT PRIMARY KEY, pw_hash TEXT NOT NULL, created_ts TEXT NOT NULL, last_login TEXT)");
+    this.sql.exec("CREATE TABLE IF NOT EXISTS admin_sessions (tok_hash TEXT PRIMARY KEY, email TEXT NOT NULL, expires TEXT NOT NULL)");
+    this.sql.exec("CREATE TABLE IF NOT EXISTS login_fails (id INTEGER PRIMARY KEY AUTOINCREMENT, ip_hash TEXT NOT NULL, ts TEXT NOT NULL)");
+    // One-time bootstrap: ADMIN_SEED secret = "email|pbkdf2$..." (a hash, never a plaintext password). Used only while admin_users is empty.
+    if (env && env.ADMIN_SEED && this.sql.exec("SELECT count(*) AS n FROM admin_users").toArray()[0].n === 0) {
+      const k = String(env.ADMIN_SEED).indexOf("|");
+      if (k > 0) this.sql.exec("INSERT INTO admin_users (email,pw_hash,created_ts) VALUES (?,?,datetime('now'))", String(env.ADMIN_SEED).slice(0, k).trim().toLowerCase(), String(env.ADMIN_SEED).slice(k + 1).trim());
+    }
   }
   logDownload(r) {
     this.sql.exec("INSERT INTO downloads (ts,country,region,city,device,browser,ua,referer) VALUES (?,?,?,?,?,?,?,?)", r.ts, r.country, r.region, r.city, r.device, r.browser, r.ua, r.referer);
@@ -676,6 +684,71 @@ export class AnalyticsDB extends DurableObject {
   }
   getResume(id) {
     return this.sql.exec("SELECT id,filename,mime,file_b64,text FROM shared_resumes WHERE id=?", id).toArray()[0] || null;
+  }
+  // ---- admin accounts / sessions ----
+  getAdmin(email) {
+    return this.sql.exec("SELECT email,pw_hash FROM admin_users WHERE email=?", String(email).toLowerCase()).toArray()[0] || null;
+  }
+  listAdmins() {
+    return this.sql.exec("SELECT email,created_ts,last_login FROM admin_users ORDER BY created_ts").toArray();
+  }
+  addAdmin(email, hash) {
+    if (this.getAdmin(email)) return { ok: false };
+    this.sql.exec("INSERT INTO admin_users (email,pw_hash,created_ts) VALUES (?,?,datetime('now'))", email, hash);
+    return { ok: true };
+  }
+  setPassword(email, hash) {
+    this.sql.exec("UPDATE admin_users SET pw_hash=? WHERE email=?", hash, email);
+    this.sql.exec("DELETE FROM admin_sessions WHERE email=?", email);
+    return { ok: true };
+  }
+  deleteAdmin(email) {
+    this.sql.exec("DELETE FROM admin_users WHERE email=?", email);
+    this.sql.exec("DELETE FROM admin_sessions WHERE email=?", email);
+    return { ok: true };
+  }
+  createSession(tokHash, email, days) {
+    this.sql.exec("DELETE FROM admin_sessions WHERE expires < datetime('now')");
+    this.sql.exec("INSERT INTO admin_sessions (tok_hash,email,expires) VALUES (?,?,datetime('now',?))", tokHash, email, "+" + days + " day");
+    this.sql.exec("UPDATE admin_users SET last_login=datetime('now') WHERE email=?", email);
+    this.sql.exec("DELETE FROM login_fails WHERE ts < datetime('now','-1 day')");
+  }
+  checkSession(tokHash) {
+    const r = this.sql.exec("SELECT s.email FROM admin_sessions s JOIN admin_users u ON u.email=s.email WHERE s.tok_hash=? AND s.expires > datetime('now')", tokHash).toArray()[0];
+    return r ? { email: r.email } : null;
+  }
+  deleteSession(tokHash) {
+    this.sql.exec("DELETE FROM admin_sessions WHERE tok_hash=?", tokHash);
+  }
+  recordFail(ipHash) {
+    this.sql.exec("INSERT INTO login_fails (ip_hash,ts) VALUES (?,datetime('now'))", ipHash);
+  }
+  recentFails(ipHash) {
+    return this.sql.exec("SELECT count(*) AS n FROM login_fails WHERE ip_hash=? AND ts >= datetime('now','-15 minutes')", ipHash).toArray()[0].n;
+  }
+  // ---- exports / read-only SQL ----
+  exportTable(t) {
+    const cols = { downloads: "id,ts,country,region,city,device,browser,referer,ua", subscribers: "id,ts,email,country,region,device,source", analyses: "id,ts,score,job_title,company,missing,country,region,device", shared_resumes: "id,consent_ts,consent_text,filename,mime,text,country,region,device" }[t];
+    if (!cols) return [];
+    return this.sql.exec("SELECT " + cols + " FROM " + t + " ORDER BY id").toArray();
+  }
+  exportAll() {
+    const out = { exported_at: new Date().toISOString() };
+    for (const t of ["downloads", "subscribers", "analyses", "shared_resumes"]) out[t] = this.exportTable(t);
+    return out;
+  }
+  runQuery(q) {
+    q = String(q || "").trim().replace(/;\s*$/, "");
+    if (!/^(select|with)\b/i.test(q)) return { error: "Only SELECT queries are allowed." };
+    if (q.includes(";")) return { error: "One statement at a time." };
+    if (/\b(insert|update|delete|drop|alter|create|replace|pragma|attach|detach|vacuum|reindex|analyze|savepoint|release|rollback|commit|begin)\b/i.test(q)) return { error: "Only read-only SELECT queries are allowed." };
+    if (/admin_|login_fails|sqlite_|_cf_/i.test(q)) return { error: "That table is not available here." };
+    try {
+      const cur = this.sql.exec(q);
+      const rows = [];
+      for (const row of cur) { rows.push(row); if (rows.length >= 1000) return { rows, capped: true }; }
+      return { rows };
+    } catch (e) { return { error: String(e.message || e).slice(0, 300) }; }
   }
   report() {
     const q = (s) => this.sql.exec(s).toArray();
@@ -779,49 +852,190 @@ function toCsv(rows, cols) {
   return [cols.join(",")].concat(rows.map((r) => cols.map((c) => q(r[c])).join(","))).join("\n");
 }
 
-async function adminDownloads(request, env) {
+// ---------- Admin (login-gated) ----------
+// Admin accounts live in the admin_users table as PBKDF2-SHA256 hashes (never plaintext).
+// Sessions: random token in an HttpOnly cookie; only its SHA-256 is stored in admin_sessions.
+const ADMIN_COOKIE = "rf_admin";
+const SESSION_DAYS = 7;
+const PBKDF2_ITER = 100000;
+const b64 = (u8) => btoa(String.fromCharCode(...u8));
+const unb64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+async function sha256b64(s) { return b64(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)))); }
+async function pbkdf2(password, salt, iter) {
+  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveBits"]);
+  return new Uint8Array(await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt, iterations: iter }, key, 256));
+}
+async function hashPassword(password) {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  return "pbkdf2$" + PBKDF2_ITER + "$" + b64(salt) + "$" + b64(await pbkdf2(password, salt, PBKDF2_ITER));
+}
+async function verifyPassword(password, stored) {
+  const p = String(stored || "").split("$");
+  if (p.length !== 4 || p[0] !== "pbkdf2") return false;
+  return safeEq(b64(await pbkdf2(password, unb64(p[2]), parseInt(p[1], 10))), p[3]);
+}
+function getCookie(request, name) {
+  const m = (request.headers.get("cookie") || "").match(new RegExp("(?:^|;\\s*)" + name + "=([^;]+)"));
+  return m ? m[1] : "";
+}
+function sameOrigin(request) {
+  const o = request.headers.get("origin");
+  return !o || o === new URL(request.url).origin;
+}
+const ADMIN_H = { "cache-control": "no-store", "x-robots-tag": "noindex, nofollow", "x-frame-options": "DENY", "referrer-policy": "same-origin" };
+const ADMIN_CSS = "body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#f6f7fb;color:#1c2130;margin:0;padding:28px}h1{font-size:22px;margin:0 0 4px}h2{font-size:13px;text-transform:uppercase;letter-spacing:1px;color:#6b7280;margin:0 0 10px}.muted{color:#6b7280}.stats{display:flex;gap:14px;flex-wrap:wrap;margin:18px 0}.stat{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:14px 18px;min-width:150px}.stat b{display:block;font-size:26px;color:#4f46e5}.card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px 18px;margin-bottom:16px;overflow:auto}.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}.pill{display:inline-block;background:#eef2ff;color:#3730a3;border-radius:999px;padding:4px 10px;margin:0 6px 6px 0;font-size:13px}table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:7px 8px;border-bottom:1px solid #f0f1f5;vertical-align:top}th{color:#6b7280;font-weight:600}.ua{max-width:360px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#6b7280}a{color:#4f46e5}.del{background:#fff;border:1px solid #fecaca;color:#b91c1c;border-radius:6px;padding:2px 8px;cursor:pointer;font-size:12px}.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.btn{background:#4f46e5;color:#fff;border:0;border-radius:8px;padding:9px 16px;font-weight:600;cursor:pointer;font-size:14px}.btn2{background:#fff;color:#1c2130;border:1px solid #d1d5db;border-radius:8px;padding:7px 14px;cursor:pointer;font-size:13px}input,textarea{font:inherit;border:1px solid #d1d5db;border-radius:8px;padding:9px 11px;box-sizing:border-box}textarea{width:100%;font-family:ui-monospace,Menlo,monospace;font-size:13px}.exp a{display:inline-block;margin:0 10px 6px 0}.err{background:#fef2f2;color:#991b1b;border:1px solid #fecaca;border-radius:8px;padding:8px 12px;margin:10px 0}.ok{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;border-radius:8px;padding:8px 12px;margin:10px 0}";
+
+function loginPage(msg, status) {
+  const html = '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>ResumeFit - Admin sign in</title><style>' + ADMIN_CSS +
+    "body{display:flex;min-height:100vh;align-items:center;justify-content:center;padding:20px;box-sizing:border-box}.box{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:32px;width:100%;max-width:380px;box-shadow:0 10px 30px rgba(17,24,39,.06)}.box label{display:block;font-size:13px;font-weight:600;margin:16px 0 6px}.box input{width:100%}.box .btn{width:100%;margin-top:22px;padding:11px}.logo{font-weight:800;font-size:20px;color:#4f46e5}</style></head><body>" +
+    '<form class="box" method="post" action="/admin/login"><div class="logo">ResumeFit</div><h1 style="margin-top:6px">Admin sign in</h1><div class="muted" style="font-size:13px">Private area. Authorised admins only.</div>' +
+    (msg ? '<div class="err">' + esc(msg) + "</div>" : "") +
+    '<label for="email">Email</label><input id="email" name="email" type="email" autocomplete="username" required autofocus>' +
+    '<label for="password">Password</label><input id="password" name="password" type="password" autocomplete="current-password" required>' +
+    '<button class="btn" type="submit">Sign in</button></form></body></html>';
+  return new Response(html, { status: status || 200, headers: { ...ADMIN_H, "content-type": "text/html; charset=utf-8" } });
+}
+const redirect = (loc, extra) => new Response(null, { status: 303, headers: { ...ADMIN_H, location: loc, ...(extra || {}) } });
+
+async function adminSession(request, env) {
+  const tok = getCookie(request, ADMIN_COOKIE);
+  if (!tok || tok.length < 20) return null;
+  return await dbStub(env).checkSession(await sha256b64(tok));
+}
+
+async function adminLogin(request, env) {
+  if (!sameOrigin(request)) return loginPage("Request blocked.", 403);
+  const f = await request.formData().catch(() => null);
+  const email = String((f && f.get("email")) || "").trim().toLowerCase().slice(0, 200);
+  const password = String((f && f.get("password")) || "").slice(0, 200);
+  const ipHash = await sha256b64("rf-login:" + (request.headers.get("cf-connecting-ip") || "?"));
+  const db = dbStub(env);
+  if ((await db.recentFails(ipHash)) >= 8) return loginPage("Too many failed attempts. Try again in 15 minutes.", 429);
+  const user = email ? await db.getAdmin(email) : null;
+  const ok = user ? await verifyPassword(password, user.pw_hash) : (await verifyPassword(password, "pbkdf2$" + PBKDF2_ITER + "$AAAAAAAAAAAAAAAAAAAAAA==$x"), false);
+  if (!ok) { await db.recordFail(ipHash); return loginPage("Wrong email or password.", 401); }
+  const tok = b64(crypto.getRandomValues(new Uint8Array(32))).replace(/[+/=]/g, (c) => ({ "+": "-", "/": "_", "=": "" })[c]);
+  await db.createSession(await sha256b64(tok), user.email, SESSION_DAYS);
+  return redirect("/admin", { "set-cookie": ADMIN_COOKIE + "=" + tok + "; Path=/admin; HttpOnly; Secure; SameSite=Strict; Max-Age=" + SESSION_DAYS * 86400 });
+}
+
+async function adminLogout(request, env) {
+  const tok = getCookie(request, ADMIN_COOKIE);
+  if (tok) await dbStub(env).deleteSession(await sha256b64(tok));
+  return redirect("/admin", { "set-cookie": ADMIN_COOKIE + "=; Path=/admin; HttpOnly; Secure; SameSite=Strict; Max-Age=0" });
+}
+
+function fileResp(body, type, name) {
+  return new Response(body, { headers: { ...ADMIN_H, "content-type": type, "content-disposition": 'attachment; filename="' + name + '"' } });
+}
+const EXPORT_COLS = {
+  downloads: ["id", "ts", "country", "region", "city", "device", "browser", "referer", "ua"],
+  subscribers: ["id", "ts", "email", "country", "region", "device", "source"],
+  analyses: ["id", "ts", "score", "job_title", "company", "missing", "country", "region", "device"],
+  shared_resumes: ["id", "consent_ts", "consent_text", "filename", "mime", "text", "country", "region", "device"],
+};
+
+async function adminPanel(request, env) {
   const url = new URL(request.url);
-  const key = url.searchParams.get("key");
-  if (!env.ADMIN_KEY || !safeEq(key, env.ADMIN_KEY)) return new Response("Not found", { status: 404, headers: { "x-robots-tag": "noindex" } });
-  const r = await dbStub(env).report();
-  const fmt = url.searchParams.get("format");
-  const h = { "cache-control": "no-store", "x-robots-tag": "noindex, nofollow" };
-  if (fmt === "json") return new Response(JSON.stringify(r, null, 2), { headers: { ...h, "content-type": "application/json" } });
-  if (fmt === "csv") return new Response(toCsv(r.downloads, ["id", "ts", "country", "region", "city", "device", "browser", "referer", "ua"]), { headers: { ...h, "content-type": "text/csv", "content-disposition": 'attachment; filename="extension-downloads.csv"' } });
-  if (fmt === "emails") return new Response(toCsv(r.subscribers, ["id", "ts", "email", "country", "region", "device"]), { headers: { ...h, "content-type": "text/csv", "content-disposition": 'attachment; filename="extension-emails.csv"' } });
-  if (fmt === "delete" && request.method === "POST") {
-    await dbStub(env).deleteRow(url.searchParams.get("table"), parseInt(url.searchParams.get("id") || "0", 10));
-    return Response.redirect(url.origin + url.pathname + "?key=" + encodeURIComponent(key), 303);
+  const me = await adminSession(request, env);
+  if (!me) return loginPage("", 200);
+  const db = dbStub(env);
+  const fmt = url.searchParams.get("format") || "";
+  const post = request.method === "POST";
+  if (post && !sameOrigin(request)) return new Response("Request blocked", { status: 403, headers: ADMIN_H });
+
+  // Exports
+  if (fmt === "export") {
+    const t = url.searchParams.get("table");
+    const as = url.searchParams.get("as") === "json" ? "json" : "csv";
+    if (t === "all") return fileResp(JSON.stringify(await db.exportAll(), null, 2), "application/json", "resumefit-db-export.json");
+    if (!EXPORT_COLS[t]) return new Response("Unknown table", { status: 400, headers: ADMIN_H });
+    const rows = await db.exportTable(t);
+    return as === "json" ? fileResp(JSON.stringify(rows, null, 2), "application/json", "resumefit-" + t + ".json") : fileResp(toCsv(rows, EXPORT_COLS[t]), "text/csv", "resumefit-" + t + ".csv");
+  }
+  if (fmt === "json") return new Response(JSON.stringify(await db.report(), null, 2), { headers: { ...ADMIN_H, "content-type": "application/json" } });
+  if (fmt === "delete" && post) {
+    await db.deleteRow(url.searchParams.get("table"), parseInt(url.searchParams.get("id") || "0", 10));
+    return redirect("/admin");
   }
   if (fmt === "resume") {
     const id = parseInt(url.searchParams.get("id") || "0", 10);
-    const row = await dbStub(env).getResume(id);
-    if (!row) return new Response("Not found", { status: 404, headers: h });
+    const row = await db.getResume(id);
+    if (!row) return new Response("Not found", { status: 404, headers: ADMIN_H });
     if (url.searchParams.get("as") !== "text" && row.file_b64) {
-      const bin = Uint8Array.from(atob(row.file_b64), (c) => c.charCodeAt(0));
+      const bin = unb64(row.file_b64);
       const fname = (row.filename || "resume-" + id).replace(/[^\w.\- ]+/g, "_");
-      return new Response(bin, { headers: { ...h, "content-type": row.mime || "application/octet-stream", "content-disposition": 'attachment; filename="' + fname + '"' } });
+      return fileResp(bin, row.mime || "application/octet-stream", fname);
     }
-    return new Response(row.text || "", { headers: { ...h, "content-type": "text/plain; charset=utf-8" } });
+    return new Response(row.text || "", { headers: { ...ADMIN_H, "content-type": "text/plain; charset=utf-8" } });
   }
-  const k = encodeURIComponent(key);
-  const del = (t, id) => '<form method="post" action="?key=' + k + "&format=delete&table=" + t + "&id=" + id + '" style="display:inline" onsubmit="return confirm(\'Delete this row?\')"><button class="del" title="Delete">Delete</button></form>';
+
+  // Admin account management
+  let note = "", noteErr = false;
+  if (post && (fmt === "add-admin" || fmt === "password" || fmt === "del-admin")) {
+    const f = await request.formData().catch(() => new FormData());
+    if (fmt === "add-admin") {
+      const e = String(f.get("email") || "").trim().toLowerCase(), p = String(f.get("password") || "");
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e)) { note = "Enter a valid email."; noteErr = true; }
+      else if (p.length < 12) { note = "Password must be at least 12 characters."; noteErr = true; }
+      else { const r = await db.addAdmin(e, await hashPassword(p)); note = r.ok ? "Admin " + e + " added." : "That admin already exists."; noteErr = !r.ok; }
+    } else if (fmt === "password") {
+      const cur = String(f.get("current") || ""), p = String(f.get("password") || "");
+      const u = await db.getAdmin(me.email);
+      if (!u || !(await verifyPassword(cur, u.pw_hash))) { note = "Current password is wrong."; noteErr = true; }
+      else if (p.length < 12) { note = "New password must be at least 12 characters."; noteErr = true; }
+      else { await db.setPassword(me.email, await hashPassword(p)); note = "Password changed."; }
+    } else {
+      const e = String(f.get("email") || "").trim().toLowerCase();
+      if (e === me.email) { note = "You can't remove yourself."; noteErr = true; }
+      else { await db.deleteAdmin(e); note = "Admin " + e + " removed."; }
+    }
+  }
+
+  // Read-only SQL
+  let sqlText = "", sqlOut = "";
+  if (post && fmt === "sql") {
+    const f = await request.formData().catch(() => new FormData());
+    sqlText = String(f.get("q") || "").slice(0, 4000);
+    const r = await db.runQuery(sqlText);
+    if (r.error) sqlOut = '<div class="err">' + esc(r.error) + "</div>";
+    else {
+      const cols = r.rows.length ? Object.keys(r.rows[0]) : [];
+      sqlOut = '<div class="muted" style="margin:8px 0">' + r.rows.length + " row(s)" + (r.capped ? " (capped at 1000)" : "") + "</div>" +
+        (cols.length ? "<table><tr>" + cols.map((c) => "<th>" + esc(c) + "</th>").join("") + "</tr>" + r.rows.map((x) => "<tr>" + cols.map((c) => '<td class="ua" title="' + esc(x[c]) + '">' + esc(x[c]) + "</td>").join("") + "</tr>").join("") + "</table>" : "");
+    }
+  }
+
+  const r = await db.report();
+  const admins = await db.listAdmins();
+  const del = (t, id) => '<form method="post" action="/admin?format=delete&table=' + t + "&id=" + id + '" style="display:inline" onsubmit="return confirm(\'Delete this row?\')"><button class="del" title="Delete">Delete</button></form>';
   const pills = (arr) => arr.length ? arr.map((x) => '<span class="pill">' + esc(x.k) + " <b>" + x.n + "</b></span>").join("") : '<span class="muted">No data yet</span>';
+  const ex = (t, label) => label + ': <a href="/admin?format=export&table=' + t + '">CSV</a> · <a href="/admin?format=export&table=' + t + '&as=json">JSON</a>';
   const dl = r.downloads.map((x) => "<tr><td>" + esc(x.ts) + " UTC</td><td>" + esc([x.city, x.region, x.country].filter(Boolean).join(", ")) + "</td><td>" + esc(x.device) + "</td><td>" + esc(x.browser) + '</td><td class="ua" title="' + esc(x.ua) + '">' + esc(x.ua) + "</td><td>" + del("downloads", x.id) + "</td></tr>").join("") || '<tr><td colspan="6" class="muted">No downloads yet</td></tr>';
   const A = r.analyses;
   const an = A.recent.map((x) => { let m = []; try { m = JSON.parse(x.missing || "[]"); } catch (e) {} return "<tr><td>" + esc(x.ts) + " UTC</td><td><b>" + esc(x.score) + "</b></td><td>" + esc(x.job_title) + "</td><td>" + esc(x.company) + '</td><td class="ua" title="' + esc(m.join(", ")) + '">' + esc(m.join(", ")) + "</td><td>" + esc([x.region, x.country].filter(Boolean).join(", ")) + "</td><td>" + del("analyses", x.id) + "</td></tr>"; }).join("") || '<tr><td colspan="7" class="muted">No analyses yet</td></tr>';
-  const rs = r.resumes.map((x) => "<tr><td>" + esc(x.consent_ts) + " UTC</td><td>" + (x.fsize ? '<a href="?key=' + k + "&format=resume&id=" + x.id + '">' + esc(x.filename || "file") + "</a>" : '<span class="muted">' + esc(x.filename || "(pasted / saved text)") + "</span>") + ' · <a href="?key=' + k + "&format=resume&id=" + x.id + '&as=text" target="_blank">text</a></td><td class="ua" title="' + esc(x.preview) + '">' + esc(x.preview) + "</td><td>" + esc([x.region, x.country].filter(Boolean).join(", ")) + "</td><td>" + esc(x.device) + "</td><td>" + del("shared_resumes", x.id) + "</td></tr>").join("") || '<tr><td colspan="6" class="muted">No shared resumes yet</td></tr>';
+  const rs = r.resumes.map((x) => "<tr><td>" + esc(x.consent_ts) + " UTC</td><td>" + (x.fsize ? '<a href="/admin?format=resume&id=' + x.id + '">' + esc(x.filename || "file") + "</a>" : '<span class="muted">' + esc(x.filename || "(pasted / saved text)") + "</span>") + ' · <a href="/admin?format=resume&id=' + x.id + '&as=text" target="_blank">text</a></td><td class="ua" title="' + esc(x.preview) + '">' + esc(x.preview) + "</td><td>" + esc([x.region, x.country].filter(Boolean).join(", ")) + "</td><td>" + esc(x.device) + "</td><td>" + del("shared_resumes", x.id) + "</td></tr>").join("") || '<tr><td colspan="6" class="muted">No resumes shared yet</td></tr>';
   const em = r.subscribers.map((x) => "<tr><td>" + esc(x.ts) + ' UTC</td><td><a href="mailto:' + esc(x.email) + '">' + esc(x.email) + "</a></td><td>" + esc([x.region, x.country].filter(Boolean).join(", ")) + "</td><td>" + esc(x.device) + "</td><td>" + del("subscribers", x.id) + "</td></tr>").join("") || '<tr><td colspan="5" class="muted">No emails yet</td></tr>';
-  const html = '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>ResumeFit - Admin</title><style>' +
-    "body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#f6f7fb;color:#1c2130;margin:0;padding:28px}h1{font-size:22px;margin:0 0 4px}h2{font-size:13px;text-transform:uppercase;letter-spacing:1px;color:#6b7280;margin:0 0 10px}.muted{color:#6b7280}.stats{display:flex;gap:14px;flex-wrap:wrap;margin:18px 0}.stat{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:14px 18px;min-width:150px}.stat b{display:block;font-size:26px;color:#4f46e5}.card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px 18px;margin-bottom:16px;overflow:auto}.pill{display:inline-block;background:#eef2ff;color:#3730a3;border-radius:999px;padding:4px 10px;margin:0 6px 6px 0;font-size:13px}table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:7px 8px;border-bottom:1px solid #f0f1f5;vertical-align:top}th{color:#6b7280;font-weight:600}td.ua{max-width:360px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#6b7280}a{color:#4f46e5}.del{border:1px solid #e5e7eb;background:#fff;color:#b91c1c;border-radius:6px;font-size:12px;padding:2px 8px;cursor:pointer}.row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}@media(max-width:800px){.row{grid-template-columns:1fr}}" +
-    '</style></head><body><h1>ResumeFit admin</h1><div class="muted">Private admin view. Do not share this link. Times in UTC. IP addresses are not stored.</div>' +
+  const adm = admins.map((a) => "<tr><td>" + esc(a.email) + (a.email === me.email ? ' <span class="pill">you</span>' : "") + "</td><td>" + esc(a.created_ts) + " UTC</td><td>" + esc(a.last_login || "-") + "</td><td>" + (a.email === me.email ? "" : '<form method="post" action="/admin?format=del-admin" style="display:inline" onsubmit="return confirm(\'Remove this admin?\')"><input type="hidden" name="email" value="' + esc(a.email) + '"><button class="del">Remove</button></form>') + "</td></tr>").join("");
+  const html = '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>ResumeFit - Admin</title><style>' + ADMIN_CSS + "</style></head><body>" +
+    '<div class="top"><div><h1>ResumeFit admin</h1><div class="muted">Signed in as <b>' + esc(me.email) + "</b>. Times in UTC. IP addresses are not stored.</div></div>" +
+    '<form method="post" action="/admin/logout"><button class="btn2">Sign out</button></form></div>' +
+    (note ? '<div class="' + (noteErr ? "err" : "ok") + '">' + esc(note) + "</div>" : "") +
     '<div class="stats"><div class="stat"><b>' + r.total + '</b>All-time downloads</div><div class="stat"><b>' + r.week + '</b>Last 7 days</div><div class="stat"><b>' + r.today + '</b>Last 24 hours</div><div class="stat"><b>' + A.total + '</b>Resumes analyzed</div><div class="stat"><b>' + (A.avg == null ? "-" : A.avg) + '</b>Average match score</div><div class="stat"><b>' + r.subscribers.length + '</b>Emails (optional)</div><div class="stat"><b>' + r.resumes.length + "</b>Resumes shared with consent</div></div>" +
+    '<div class="card exp"><h2>Database export</h2>' + ex("downloads", "Downloads") + " &nbsp;|&nbsp; " + ex("subscribers", "Emails") + " &nbsp;|&nbsp; " + ex("shared_resumes", "Shared resumes") + " &nbsp;|&nbsp; " + ex("analyses", "Analyses") + ' &nbsp;|&nbsp; <a href="/admin?format=export&table=all"><b>Full database (JSON)</b></a></div>' +
     '<div class="row"><div class="card"><h2>By country</h2>' + pills(r.byCountry) + '</div><div class="card"><h2>By device</h2>' + pills(r.byDevice) + '</div><div class="card"><h2>By day</h2>' + pills(r.byDay) + "</div></div>" +
-    '<div class="card"><h2>Upload analytics - ' + A.total + " analyses, " + A.week + ' in last 7 days</h2><div class="muted" style="font-size:12px;margin:-4px 0 10px">Anonymous: score, job title/company from the JD, and missing keywords. No resume text is kept here.</div><div class="row"><div><h2 style="margin-top:6px">Most common gaps</h2>' + pills(A.gaps) + '</div><div><h2 style="margin-top:6px">Roles people check</h2>' + pills(A.titles) + '</div><div><h2 style="margin-top:6px">Companies</h2>' + pills(A.companies) + '<h2 style="margin-top:14px">Score spread</h2>' + pills(A.buckets) + '</div></div><h2 style="margin-top:14px">Latest analyses</h2><table><tr><th>When</th><th>Score</th><th>Role</th><th>Company</th><th>Missing keywords</th><th>Location</th><th></th></tr>' + an + "</table></div>" +
+    '<div class="card"><h2>Upload analytics - ' + A.total + " analyses, " + A.week + ' in last 7 days</h2><div class="muted" style="font-size:12px;margin:-4px 0 10px">Anonymous: score, job title/company from the JD, and missing keywords. No resume text is kept here.</div><div class="row"><div><h2 style="margin-top:6px">Most common gaps</h2>' + pills(A.gaps) + '</div><div><h2 style="margin-top:6px">Roles people check</h2>' + pills(A.titles) + '</div><div><h2 style="margin-top:6px">Companies</h2>' + pills(A.companies) + '<h2 style="margin-top:14px">Score spread</h2>' + pills(A.buckets) + "</div></div>" +
+    '<h2 style="margin-top:14px">Latest analyses</h2><table><tr><th>When</th><th>Score</th><th>Job title</th><th>Company</th><th>Missing keywords</th><th>Location</th><th></th></tr>' + an + "</table></div>" +
     '<div class="card"><h2>Resumes shared with consent (' + r.resumes.length + ')</h2><div class="muted" style="font-size:12px;margin:-4px 0 8px">Only people who ticked the optional sharing box. Keep these private; delete on request.</div><table><tr><th>Consent given</th><th>File</th><th>Preview</th><th>Location</th><th>Device</th><th></th></tr>' + rs + "</table></div>" +
-    '<div class="card"><h2>Emails left before download (' + r.subscribers.length + ') - <a href="?key=' + k + '&format=emails">CSV</a></h2><table><tr><th>When</th><th>Email</th><th>Location</th><th>Device</th><th></th></tr>' + em + "</table></div>" +
-    '<div class="card"><h2>Downloads (latest 500) - <a href="?key=' + k + '&format=csv">CSV</a> · <a href="?key=' + k + '&format=json">JSON</a></h2><table><tr><th>When</th><th>Location</th><th>Device</th><th>Browser</th><th>User agent</th><th></th></tr>' + dl + "</table></div></body></html>";
-  return new Response(html, { headers: { ...h, "content-type": "text/html; charset=utf-8" } });
+    '<div class="card"><h2>Emails left before download (' + r.subscribers.length + ")</h2><table><tr><th>When</th><th>Email</th><th>Location</th><th>Device</th><th></th></tr>" + em + "</table></div>" +
+    '<div class="card"><h2>Downloads (latest 500)</h2><table><tr><th>When</th><th>Location</th><th>Device</th><th>Browser</th><th>User agent</th><th></th></tr>' + dl + "</table></div>" +
+    '<div class="card"><h2>SQL query (read-only)</h2><div class="muted" style="font-size:12px;margin:-4px 0 8px">One SELECT at a time over: downloads, subscribers, analyses, shared_resumes. Max 1000 rows. Example: SELECT company, count(*) FROM analyses GROUP BY 1 ORDER BY 2 DESC</div>' +
+    '<form method="post" action="/admin?format=sql"><textarea name="q" rows="3" placeholder="SELECT * FROM analyses ORDER BY id DESC LIMIT 50">' + esc(sqlText) + '</textarea><div style="margin-top:8px"><button class="btn">Run query</button></div></form>' + sqlOut + "</div>" +
+    '<div class="row"><div class="card"><h2>Admin users</h2><table><tr><th>Email</th><th>Added</th><th>Last sign in</th><th></th></tr>' + adm + "</table>" +
+    '<form method="post" action="/admin?format=add-admin" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><input name="email" type="email" placeholder="new admin email" required><input name="password" type="password" placeholder="password (12+ chars)" minlength="12" required autocomplete="new-password"><button class="btn2">Add admin</button></form></div>' +
+    '<div class="card"><h2>Change my password</h2><form method="post" action="/admin?format=password" style="display:flex;gap:8px;flex-wrap:wrap"><input name="current" type="password" placeholder="current password" required autocomplete="current-password"><input name="password" type="password" placeholder="new password (12+ chars)" minlength="12" required autocomplete="new-password"><button class="btn2">Change</button></form></div></div>' +
+    "</body></html>";
+  return new Response(html, { headers: { ...ADMIN_H, "content-type": "text/html; charset=utf-8" } });
 }
 
 export default {
@@ -870,7 +1084,13 @@ export default {
     if (request.method === "POST" && url.pathname === "/api/subscribe")
       return subscribe(request, env);
     if (url.pathname === "/admin-downloads")
-      return adminDownloads(request, env);
+      return new Response(null, { status: 301, headers: { location: "/admin", "cache-control": "no-store" } });
+    if (url.pathname === "/admin/login" && request.method === "POST")
+      return adminLogin(request, env);
+    if (url.pathname === "/admin/logout" && request.method === "POST")
+      return adminLogout(request, env);
+    if (url.pathname === "/admin" || url.pathname === "/admin/")
+      return adminPanel(request, env);
     return new Response("ResumeFit API", { status: 200 });
   },
 };

@@ -60,5 +60,15 @@ A SQLite-backed Durable Object (`AnalyticsDB`, free tier) stores:
 - resumes shared by users who tick the optional, unticked-by-default consent checkbox
 - anonymous analysis stats (score, job title/company, missing keywords, region)
 
-The private admin view is at `/admin-downloads?key=<ADMIN_KEY>`. `ADMIN_KEY` is a Worker secret
-(`wrangler secret put ADMIN_KEY`) and is not in this repo. Rows can be exported (CSV/JSON) and deleted there.
+The admin panel is at `/admin` and needs an email + password login. Admin accounts live in the
+`admin_users` table of the Durable Object SQLite database, stored only as PBKDF2-SHA256 hashes
+(no plaintext passwords anywhere). Sessions use a random HttpOnly, Secure, SameSite=Strict cookie;
+only a hash of the session token is stored. Failed logins are rate-limited per (hashed) IP.
+
+From the panel you can: see all records, delete rows, export every table as CSV/JSON (or the whole
+database as one JSON file), run read-only SELECT queries over the data tables, add admins and
+change your password. The old `/admin-downloads?key=...` link is retired and redirects to `/admin`.
+
+First-time setup on a fresh deployment: set a one-time `ADMIN_SEED` Worker secret of the form
+`email|pbkdf2$100000$<salt_b64>$<hash_b64>`. It is only used while `admin_users` is empty and can be
+deleted after the first admin exists.
