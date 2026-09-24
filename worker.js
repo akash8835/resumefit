@@ -542,6 +542,21 @@ async function interviewPrep(request, env) {
 }
 
 // ---------- FitCoach chat ----------
+function parseChatJson(result) {
+  const raw = result && result.response;
+  if (raw && typeof raw === "object") return raw;
+  const text = typeof raw === "string" ? raw : "";
+  const start = text.indexOf("{");
+  if (start === -1) return null;
+  for (let i = start + 1; i <= text.length; i++) {
+    if (text[i - 1] !== "}") continue;
+    try {
+      const p = JSON.parse(sanitizeJson(text.slice(start, i)));
+      if (p && typeof p.reply === "string") return p;
+    } catch (err) { /* keep scanning for a complete object */ }
+  }
+  return null;
+}
 const CHAT_SYSTEM =
   "You are FitCoach, the resume and job-search coach inside ResumeFit (a free resume analyzer focused on the Indian job market). You help with resumes, ATS keywords, job applications, interviews, LinkedIn and career moves. " + TRUTH_RULES +
   " How to answer: open with the direct answer in one short line, then give 2-4 specific, actionable points as '-' bullets. Aim for 90-180 words: never a one-liner, never a wall of text. Every bullet must be a full sentence naming a concrete tool, keyword, example phrase or action the user can do today - vague filler like 'improve formatting' or 'add keywords' without saying exactly which and how is a failure. Plain text only: '-' for bullets, no markdown headings or bold. When their analysis is attached, use the actual numbers, sub-score names, missing keywords and resume lines in front of you: name the weakest sub-scores and the exact missing keywords that matter most. When a rewrite would help, show one short before -> after using only real resume content. " +
@@ -581,7 +596,7 @@ async function fitCoach(request, env) {
   for (let attempt = 0; attempt < 2 && !parsed; attempt++) {
     try {
       const r = await env.AI.run(MODEL, { messages, max_tokens: 1000, temperature: 0.5, response_format: { type: "json_object" } });
-      const p = parseAiJson(r);
+      const p = parseChatJson(r);
       if (p && typeof p.reply === "string" && p.reply.trim()) parsed = p;
       else lastErr = new Error("incomplete");
     } catch (e) { lastErr = e; }
