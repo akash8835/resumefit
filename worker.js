@@ -578,16 +578,24 @@ async function fitCoach(request, env) {
   let parsed = null, lastErr = null;
   for (let attempt = 0; attempt < 2 && !parsed; attempt++) {
     try {
-      const r = await env.AI.run(MODEL, { messages, max_tokens: 800, temperature: 0.5, response_format: { type: "json_object" } });
+      const r = await env.AI.run(MODEL, { messages, max_tokens: 1000, temperature: 0.5, response_format: { type: "json_object" } });
       const p = parseAiJson(r);
       if (p && typeof p.reply === "string" && p.reply.trim()) parsed = p;
       else lastErr = new Error("incomplete");
     } catch (e) { lastErr = e; }
   }
-  if (!parsed) return aiError(lastErr || new Error("incomplete"));
-  const reply = String(parsed.reply).trim().slice(0, 2500);
-  const suggestions = arr(parsed.suggestions).map((s) => clip(s, 80)).filter(Boolean).slice(0, 3);
-  return jsonResponse({ reply, suggestions });
+  if (parsed) {
+    const reply = String(parsed.reply).trim().slice(0, 2500);
+    const suggestions = arr(parsed.suggestions).map((s) => clip(s, 80)).filter(Boolean).slice(0, 3);
+    return jsonResponse({ reply, suggestions });
+  }
+  // Plain-text fallback: drop JSON mode so the user still gets an answer.
+  try {
+    const r2 = await env.AI.run(MODEL, { messages, max_tokens: 800, temperature: 0.5 });
+    const reply = String((r2 && r2.response) || "").trim();
+    if (!reply) throw new Error("incomplete");
+    return jsonResponse({ reply: reply.slice(0, 2500), suggestions: [] });
+  } catch (e) { return aiError(e); }
 }
 
 // ---------- LinkedIn optimizer ----------
