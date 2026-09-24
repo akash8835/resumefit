@@ -52,12 +52,20 @@ function sanitizeJson(s) {
 }
 const SYSTEM_PROMPT =
   'You are an expert resume coach, ATS (applicant tracking system) specialist, and former tech recruiter. You analyze a candidate\'s resume against one specific job description, then rewrite the resume to fit that job. Rules you must follow:\n- Be specific. Reference the exact resume lines you criticise.\n- NEVER invent experience, employers, metrics, numbers, or skills that are not in the original resume. Rephrase, reorder, and re-emphasise only.\n- Recommendations must never tell the candidate to add unverified facts. If a job asks for experience absent from the resume, say to add it only if true, otherwise name the gap honestly.\n- The rewritten resume must be truthful, ATS-friendly (plain section headings like SUMMARY, SKILLS, EXPERIENCE, EDUCATION; no tables), and use the job description\'s important keywords where they truthfully apply.\n- The rewritten resume must be complete and ready to use, covering every section from the original that belongs in a resume.\n- Keep the rewritten resume under 500 words unless the original is genuinely senior-level.\nRespond with ONLY a valid JSON object. No markdown fences, no commentary, no text before or after. Use exactly these keys:\n{"job_title": the role title from the job description, "company": the hiring company name or "", "score": integer 0-100 for how well the current resume matches this job, "subscores": {"skills": integer 0-100 for relevant skills match, "experience": integer 0-100 for experience relevance, "keywords": integer 0-100 for ATS keyword coverage, "impact": integer 0-100 for quantified impact and outcome evidence, "clarity": integer 0-100 for clarity and resume structure}, "verdict": one plain sentence summarising the fit, "recommendations": array of 4-7 objects, each exactly {"priority":"high" or "medium" or "low", "action": one specific instruction the candidate can take, "why": one short job-specific reason}, ordered high priority first, "rewrite_changes": array of 3-8 objects, each exactly {"before": an exact short line or bullet from the original resume, "after": its truthful improved version, "reason": one short explanation of why the change better fits this job}, "keyword_coverage": array of 6-12 important JD keyword objects, each exactly {"keyword": normalized keyword or skill, "frequency": integer count of appearances in the job description, "covered": boolean for whether the resume clearly contains or demonstrates it}, ordered by frequency descending, "fluff_detector": array of 2-6 objects each exactly {"line": exact vague or generic resume line, "why": short reason it weakens credibility}; use [] if none, "recruiter_view": object exactly {"first_impression": short sentence, "strongest_signal": short phrase, "main_concern": short phrase, "likely_decision": one of "Advance", "Maybe", or "Reject" plus a short reason}, "rewritten_resume": the full tailored resume as plain text with line breaks as \\n} CRITICAL OUTPUT RULES: output ONLY one valid JSON object that JSON.parse can read. Every property name and every string value MUST be enclosed in double quotes. Never leave a value unquoted. No trailing commas, no commentary, no markdown fences.';
+const SEC_H = {
+  "x-content-type-options": "nosniff",
+  "referrer-policy": "strict-origin-when-cross-origin",
+  "strict-transport-security": "max-age=31536000; includeSubDomains",
+};
+const MAIN_CSP =
+  "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; worker-src 'self' https://cdnjs.cloudflare.com; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'";
 function jsonResponse(obj, status) {
   return new Response(JSON.stringify(obj), {
     status: status || 200,
     headers: {
       "content-type": "application/json;charset=UTF-8",
       "Access-Control-Allow-Origin": "*",
+      ...SEC_H,
     },
   });
 }
@@ -80,6 +88,21 @@ function stripHtml(html) {
     .replace(/\n\s*\n+/g, "\n")
     .trim();
 }
+function isPrivateHost(h) {
+  h = String(h || "").toLowerCase();
+  if (!h || h.indexOf(":") !== -1) return true; // empty or IPv6 literal
+  if (h === "localhost" || /\.(localhost|internal|local|home|corp|lan)$/.test(h)) return true;
+  const m = h.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (!m) return false;
+  const a = +m[1], b = +m[2];
+  if (a === 0 || a === 10 || a === 127 || a >= 224) return true;
+  if (a === 169 && b === 254) return true;
+  if (a === 172 && b >= 16 && b <= 31) return true;
+  if (a === 192 && (b === 168 || b === 0)) return true;
+  if (a === 100 && b >= 64 && b <= 127) return true;
+  if (a === 198 && (b === 18 || b === 19)) return true;
+  return false;
+}
 const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";
 async function fetchJd(request) {
@@ -100,6 +123,11 @@ async function fetchJd(request) {
     );
   }
   if (u.protocol !== "http:" && u.protocol !== "https:")
+    return jsonResponse(
+      { error: "That does not look like a valid link." },
+      400,
+    );
+  if (isPrivateHost(u.hostname))
     return jsonResponse(
       { error: "That does not look like a valid link." },
       400,
@@ -637,7 +665,7 @@ async function referralMessage(request, env) {
 // ---------- Chrome extension download + download log ----------
 async function extensionZip() {
   const bin = Uint8Array.from(atob(EXT_ZIP_B64), (c) => c.charCodeAt(0));
-  return new Response(bin, { headers: { "content-type": "application/zip", "content-disposition": 'attachment; filename="resumefit-extension.zip"', "cache-control": "no-cache" } });
+  return new Response(bin, { headers: { "content-type": "application/zip", "x-content-type-options": "nosniff", "content-disposition": 'attachment; filename="resumefit-extension.zip"', "cache-control": "no-cache" } });
 }
 
 // SQLite-backed Durable Object: one instance holds the download log and optional update emails.
@@ -725,6 +753,16 @@ export class AnalyticsDB extends DurableObject {
   }
   recentFails(ipHash) {
     return this.sql.exec("SELECT count(*) AS n FROM login_fails WHERE ip_hash=? AND ts >= datetime('now','-15 minutes')", ipHash).toArray()[0].n;
+  }
+  // Fixed 1-hour-window rate limiter for public endpoints. Keyed by a SHA-256 of the
+  // client IP (same treatment as login_fails - raw IPs are never stored).
+  rateHit(key, limit) {
+    const hour = new Date().toISOString().slice(0, 13);
+    this.sql.exec("CREATE TABLE IF NOT EXISTS rate_limits (k TEXT PRIMARY KEY, n INTEGER NOT NULL)");
+    this.sql.exec("DELETE FROM rate_limits WHERE substr(k, -13) < ?", hour);
+    const k = key + ":" + hour;
+    this.sql.exec("INSERT INTO rate_limits (k,n) VALUES (?,1) ON CONFLICT(k) DO UPDATE SET n=n+1", k);
+    return this.sql.exec("SELECT n FROM rate_limits WHERE k=?", k).toArray()[0].n > limit;
   }
   // ---- exports / read-only SQL ----
   exportTable(t) {
@@ -850,6 +888,12 @@ function safeEq(a, b) {
 function toCsv(rows, cols) {
   const q = (v) => '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"';
   return [cols.join(",")].concat(rows.map((r) => cols.map((c) => q(r[c])).join(","))).join("\n");
+}
+
+async function tooMany(request, env, scope, limit) {
+  const ip = request.headers.get("cf-connecting-ip") || "?";
+  const key = scope + ":" + (await sha256b64("rf-rl:" + ip));
+  return await dbStub(env).rateHit(key, limit);
 }
 
 // ---------- Admin (login-gated) ----------
@@ -1047,10 +1091,27 @@ export default {
           headers: {
             "content-type": "text/html; charset=utf-8",
             "cache-control": "no-cache",
+            "content-security-policy": MAIN_CSP,
+            "x-frame-options": "DENY",
+            ...SEC_H,
           },
         });
     }
     const url = new URL(request.url);
+    // Per-IP hourly rate limits on public endpoints (see rateHit): AI calls and
+    // job/JD fetches cost real quota, and the write endpoints fill the database.
+    const RL = {
+      "/api/analyze": ["ai", 40], "/api/cover-letter": ["ai", 40], "/api/interview": ["ai", 40],
+      "/api/linkedin": ["ai", 40], "/api/quick-score": ["ai", 40], "/api/salary": ["ai", 40],
+      "/api/referral-message": ["ai", 40], "/api/jobs": ["fetch", 60], "/api/fetch-jd": ["fetch", 60],
+      "/api/share-resume": ["write", 15], "/api/subscribe": ["write", 15],
+    };
+    const rl = RL[url.pathname];
+    if (rl && (await tooMany(request, env, rl[0], rl[1])))
+      return jsonResponse(
+        { error: "Too many requests from this network. Please wait a while and try again." },
+        429,
+      );
     if (request.method === "OPTIONS")
       return new Response(null, {
         headers: {
