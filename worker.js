@@ -764,6 +764,16 @@ export class AnalyticsDB extends DurableObject {
     this.sql.exec("INSERT INTO rate_limits (k,n) VALUES (?,1) ON CONFLICT(k) DO UPDATE SET n=n+1", k);
     return this.sql.exec("SELECT n FROM rate_limits WHERE k=?", k).toArray()[0].n > limit;
   }
+  // Fixed 1-day-window cap (UTC day), same hashed-IP keys as rateHit. Separate table so
+  // the hourly cleanup above never touches daily counters.
+  rateHitDay(key, limit) {
+    const day = new Date().toISOString().slice(0, 10);
+    this.sql.exec("CREATE TABLE IF NOT EXISTS rate_daily (k TEXT PRIMARY KEY, n INTEGER NOT NULL)");
+    this.sql.exec("DELETE FROM rate_daily WHERE substr(k, -10) < ?", day);
+    const k = key + ":" + day;
+    this.sql.exec("INSERT INTO rate_daily (k,n) VALUES (?,1) ON CONFLICT(k) DO UPDATE SET n=n+1", k);
+    return this.sql.exec("SELECT n FROM rate_daily WHERE k=?", k).toArray()[0].n > limit;
+  }
   // ---- exports / read-only SQL ----
   exportTable(t) {
     const cols = { downloads: "id,ts,country,region,city,device,browser,referer,ua", subscribers: "id,ts,email,country,region,device,source", analyses: "id,ts,score,job_title,company,missing,country,region,device", shared_resumes: "id,consent_ts,consent_text,filename,mime,text,country,region,device" }[t];
@@ -873,6 +883,7 @@ async function subscribe(request, env) {
   try { b = await request.json(); } catch (e) {}
   const email = String(b.email || "").trim().slice(0, 200);
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return jsonResponse({ error: "Enter a valid email." }, 400);
+  if (badEmail(email)) return jsonResponse({ error: "Please use your real email address (temporary inboxes are not accepted)." }, 400);
   const g = geo(request), d = parseUA(request.headers.get("user-agent"));
   const r = await dbStub(env).addSubscriber({ ts: new Date().toISOString().replace("T", " ").slice(0, 19), email, country: g.country, region: g.region, device: d.device, source: "extension" });
   return jsonResponse(r);
@@ -890,10 +901,19 @@ function toCsv(rows, cols) {
   return [cols.join(",")].concat(rows.map((r) => cols.map((c) => q(r[c])).join(","))).join("\n");
 }
 
-async function tooMany(request, env, scope, limit) {
+async function tooMany(request, env, scope, limit, daily) {
   const ip = request.headers.get("cf-connecting-ip") || "?";
   const key = scope + ":" + (await sha256b64("rf-rl:" + ip));
-  return await dbStub(env).rateHit(key, limit);
+  return daily ? await dbStub(env).rateHitDay(key, limit) : await dbStub(env).rateHit(key, limit);
+}
+// Throwaway / disposable inbox domains rejected on the optional email box.
+const DISPOSABLE = new Set(("mailinator.com,guerrillamail.com,guerrillamail.net,guerrillamail.org,guerrillamailblock.com,sharklasers.com,grr.la,pokemail.net,spam4.me,10minutemail.com,10minutemail.net,10minmail.com,tempmail.com,temp-mail.org,temp-mail.io,tempmail.net,tempmailo.com,tempail.com,tempr.email,tmpmail.org,tmpmail.net,tmails.net,yopmail.com,yopmail.net,yopmail.fr,throwawaymail.com,trashmail.com,trashmail.net,trashmail.de,getnada.com,nada.email,dispostable.com,maildrop.cc,mailnesia.com,mintemail.com,mohmal.com,emailondeck.com,fakeinbox.com,fakemail.net,fake-mail.net,burnermail.io,mailcatch.com,moakt.com,mytemp.email,spamgourmet.com,spambox.us,getairmail.com,inboxkitten.com,mailpoof.com,mail.tm,mail.gw,1secmail.com,1secmail.net,1secmail.org,emltmp.com,dropmail.me,discard.email,discardmail.com,harakirimail.com,jetable.org,linshiyouxiang.net,mailforspam.com,mailtemp.info,anonaddy.me,33mail.com,spamex.com,mvrht.com,byom.de,wegwerfmail.de,einrot.com,armyspy.com,cuvox.de,dayrep.com,fleckens.hu,gustr.com,jourrapide.com,rhyta.com,superrito.com,teleworm.us,tempinbox.com,mailexpire.com,incognitomail.org,deadaddress.com,trbvm.com,vomoto.com,cool.fr.nf,jetable.fr.nf,mail-temp.com,email-temp.com,tempmailaddress.com,emailfake.com,crazymailing.com,luxusmail.org,tempm.com,minuteinbox.com,10mail.org,20minutemail.com,30minutemail.com,mailsac.com,mailbox.in.ua,spamdecoy.net,example.com,example.org,example.net,test.com").split(","));
+function badEmail(email) {
+  const dom = email.split("@").pop().toLowerCase();
+  if (DISPOSABLE.has(dom) || [...DISPOSABLE].some((d) => dom.endsWith("." + d))) return true;
+  if (/(^|\.)(temp|trash|throwaway|disposable|fake|spam)[a-z0-9-]*mail/.test(dom)) return true;
+  if (/\.(test|invalid|localhost|local|example)$/.test(dom)) return true;
+  return false;
 }
 
 // ---------- Admin (login-gated) ----------
@@ -927,11 +947,11 @@ function sameOrigin(request) {
   return !o || o === new URL(request.url).origin;
 }
 const ADMIN_H = { "cache-control": "no-store", "x-robots-tag": "noindex, nofollow", "x-frame-options": "DENY", "referrer-policy": "same-origin" };
-const ADMIN_CSS = "body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#f6f7fb;color:#1c2130;margin:0;padding:28px}h1{font-size:22px;margin:0 0 4px}h2{font-size:13px;text-transform:uppercase;letter-spacing:1px;color:#6b7280;margin:0 0 10px}.muted{color:#6b7280}.stats{display:flex;gap:14px;flex-wrap:wrap;margin:18px 0}.stat{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:14px 18px;min-width:150px}.stat b{display:block;font-size:26px;color:#4f46e5}.card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px 18px;margin-bottom:16px;overflow:auto}.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}.pill{display:inline-block;background:#eef2ff;color:#3730a3;border-radius:999px;padding:4px 10px;margin:0 6px 6px 0;font-size:13px}table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:7px 8px;border-bottom:1px solid #f0f1f5;vertical-align:top}th{color:#6b7280;font-weight:600}.ua{max-width:360px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#6b7280}a{color:#4f46e5}.del{background:#fff;border:1px solid #fecaca;color:#b91c1c;border-radius:6px;padding:2px 8px;cursor:pointer;font-size:12px}.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}.btn{background:#4f46e5;color:#fff;border:0;border-radius:8px;padding:9px 16px;font-weight:600;cursor:pointer;font-size:14px}.btn2{background:#fff;color:#1c2130;border:1px solid #d1d5db;border-radius:8px;padding:7px 14px;cursor:pointer;font-size:13px}input,textarea{font:inherit;border:1px solid #d1d5db;border-radius:8px;padding:9px 11px;box-sizing:border-box}textarea{width:100%;font-family:ui-monospace,Menlo,monospace;font-size:13px}.exp a{display:inline-block;margin:0 10px 6px 0}.err{background:#fef2f2;color:#991b1b;border:1px solid #fecaca;border-radius:8px;padding:8px 12px;margin:10px 0}.ok{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;border-radius:8px;padding:8px 12px;margin:10px 0}";
+const ADMIN_CSS = ":root{--bg:#07080d;--card:rgba(255,255,255,.045);--card2:rgba(255,255,255,.07);--text:#eef0f8;--muted:#9aa3bd;--accent:#7c8cff;--accent2:#8b5cf6;--red:#fb7185;--green:#34d399;--border:rgba(255,255,255,.09);--grad:linear-gradient(135deg,#6c8cff 0%,#8b5cf6 55%,#a855f7 100%)}*{box-sizing:border-box}body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);background-image:radial-gradient(900px 500px at 10% -10%,rgba(124,140,255,.16),transparent 60%),radial-gradient(800px 500px at 100% 0%,rgba(168,85,247,.12),transparent 60%);background-attachment:fixed;color:var(--text);margin:0;padding:28px;min-height:100vh}h1{font-family:Sora,Inter,sans-serif;font-size:24px;margin:0 0 4px;letter-spacing:-.3px}h2{font-size:12px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin:0 0 12px;font-weight:600}.muted{color:var(--muted)}.grad{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}.wrap{max-width:1180px;margin:0 auto}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin:4px 0 18px}.stat{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;color:var(--muted);font-size:13px;backdrop-filter:blur(10px)}.stat b{display:block;font-family:Sora,Inter,sans-serif;font-size:28px;margin-bottom:2px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px 20px;margin-bottom:16px;overflow:auto;backdrop-filter:blur(10px);box-shadow:0 10px 30px rgba(0,0,0,.25)}.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}.pill{display:inline-block;background:rgba(124,140,255,.12);border:1px solid rgba(124,140,255,.25);color:#c7cdff;border-radius:999px;padding:4px 10px;margin:0 6px 6px 0;font-size:13px}.pill b{color:#fff}table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:top}th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.6px}tr:hover td{background:rgba(255,255,255,.02)}.ua{max-width:360px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}a{color:#9aa8ff}.del{background:rgba(251,113,133,.08);border:1px solid rgba(251,113,133,.35);color:var(--red);border-radius:7px;padding:3px 9px;cursor:pointer;font-size:12px}.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:18px}.btn{background:var(--grad);color:#fff;border:0;border-radius:10px;padding:10px 18px;font-weight:600;cursor:pointer;font-size:14px;box-shadow:0 8px 24px rgba(124,140,255,.28)}.btn2{background:var(--card2);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:8px 14px;cursor:pointer;font-size:13px}input,textarea{font:inherit;color:var(--text);background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:10px;padding:10px 12px}input:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(124,140,255,.2)}textarea{width:100%;font-family:ui-monospace,Menlo,monospace;font-size:13px}.err{background:rgba(251,113,133,.1);color:#fecdd3;border:1px solid rgba(251,113,133,.35);border-radius:10px;padding:9px 13px;margin:10px 0}.ok{background:rgba(52,211,153,.1);color:#a7f3d0;border:1px solid rgba(52,211,153,.35);border-radius:10px;padding:9px 13px;margin:10px 0}.tabs{display:flex;gap:6px;flex-wrap:wrap;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:6px;margin:0 0 20px;position:sticky;top:10px;z-index:5;backdrop-filter:blur(14px)}.tab{display:inline-flex;align-items:center;gap:7px;padding:9px 14px;border-radius:10px;color:var(--muted);text-decoration:none;font-size:14px;font-weight:500}.tab:hover{color:var(--text);background:rgba(255,255,255,.05)}.tab.on{background:var(--grad);color:#fff;box-shadow:0 6px 20px rgba(124,140,255,.3)}.tab .n{font-size:11px;background:rgba(255,255,255,.12);border-radius:999px;padding:1px 7px}.exl{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--border)}.exl:last-child{border-bottom:0}.exl a{margin-left:8px}.sec-h{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:6px}";
 
 function loginPage(msg, status) {
-  const html = '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>ResumeFit - Admin sign in</title><style>' + ADMIN_CSS +
-    "body{display:flex;min-height:100vh;align-items:center;justify-content:center;padding:20px;box-sizing:border-box}.box{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:32px;width:100%;max-width:380px;box-shadow:0 10px 30px rgba(17,24,39,.06)}.box label{display:block;font-size:13px;font-weight:600;margin:16px 0 6px}.box input{width:100%}.box .btn{width:100%;margin-top:22px;padding:11px}.logo{font-weight:800;font-size:20px;color:#4f46e5}</style></head><body>" +
+  const html = '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>ResumeFit - Admin sign in</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap"><style>' + ADMIN_CSS +
+    "body{display:flex;min-height:100vh;align-items:center;justify-content:center;padding:20px;box-sizing:border-box}.box{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:32px;width:100%;max-width:380px;box-shadow:0 20px 50px rgba(0,0,0,.4);backdrop-filter:blur(12px)}.box label{display:block;font-size:13px;font-weight:600;margin:16px 0 6px}.box input{width:100%}.box .btn{width:100%;margin-top:22px;padding:11px}.logo{font-family:Sora,Inter,sans-serif;font-weight:800;font-size:22px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}</style></head><body>" +
     '<form class="box" method="post" action="/admin/login"><div class="logo">ResumeFit</div><h1 style="margin-top:6px">Admin sign in</h1><div class="muted" style="font-size:13px">Private area. Authorised admins only.</div>' +
     (msg ? '<div class="err">' + esc(msg) + "</div>" : "") +
     '<label for="email">Email</label><input id="email" name="email" type="email" autocomplete="username" required autofocus>' +
@@ -979,6 +999,7 @@ const EXPORT_COLS = {
   shared_resumes: ["id", "consent_ts", "consent_text", "filename", "mime", "text", "country", "region", "device"],
 };
 
+const TABLE_TAB = { downloads: "downloads", subscribers: "emails", analyses: "analytics", shared_resumes: "resumes" };
 async function adminPanel(request, env) {
   const url = new URL(request.url);
   const me = await adminSession(request, env);
@@ -1000,7 +1021,7 @@ async function adminPanel(request, env) {
   if (fmt === "json") return new Response(JSON.stringify(await db.report(), null, 2), { headers: { ...ADMIN_H, "content-type": "application/json" } });
   if (fmt === "delete" && post) {
     await db.deleteRow(url.searchParams.get("table"), parseInt(url.searchParams.get("id") || "0", 10));
-    return redirect("/admin");
+    return redirect("/admin?tab=" + (TABLE_TAB[url.searchParams.get("table")] || "overview"));
   }
   if (fmt === "resume") {
     const id = parseInt(url.searchParams.get("id") || "0", 10);
@@ -1061,24 +1082,50 @@ async function adminPanel(request, env) {
   const rs = r.resumes.map((x) => "<tr><td>" + esc(x.consent_ts) + " UTC</td><td>" + (x.fsize ? '<a href="/admin?format=resume&id=' + x.id + '">' + esc(x.filename || "file") + "</a>" : '<span class="muted">' + esc(x.filename || "(pasted / saved text)") + "</span>") + ' · <a href="/admin?format=resume&id=' + x.id + '&as=text" target="_blank">text</a></td><td class="ua" title="' + esc(x.preview) + '">' + esc(x.preview) + "</td><td>" + esc([x.region, x.country].filter(Boolean).join(", ")) + "</td><td>" + esc(x.device) + "</td><td>" + del("shared_resumes", x.id) + "</td></tr>").join("") || '<tr><td colspan="6" class="muted">No resumes shared yet</td></tr>';
   const em = r.subscribers.map((x) => "<tr><td>" + esc(x.ts) + ' UTC</td><td><a href="mailto:' + esc(x.email) + '">' + esc(x.email) + "</a></td><td>" + esc([x.region, x.country].filter(Boolean).join(", ")) + "</td><td>" + esc(x.device) + "</td><td>" + del("subscribers", x.id) + "</td></tr>").join("") || '<tr><td colspan="5" class="muted">No emails yet</td></tr>';
   const adm = admins.map((a) => "<tr><td>" + esc(a.email) + (a.email === me.email ? ' <span class="pill">you</span>' : "") + "</td><td>" + esc(a.created_ts) + " UTC</td><td>" + esc(a.last_login || "-") + "</td><td>" + (a.email === me.email ? "" : '<form method="post" action="/admin?format=del-admin" style="display:inline" onsubmit="return confirm(\'Remove this admin?\')"><input type="hidden" name="email" value="' + esc(a.email) + '"><button class="del">Remove</button></form>') + "</td></tr>").join("");
-  const html = '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>ResumeFit - Admin</title><style>' + ADMIN_CSS + "</style></head><body>" +
-    '<div class="top"><div><h1>ResumeFit admin</h1><div class="muted">Signed in as <b>' + esc(me.email) + "</b>. Times in UTC. IP addresses are not stored.</div></div>" +
+  // Category tabs (server-rendered: each tab is its own URL, no client JS needed)
+  const TABS = [
+    ["overview", "Overview", null],
+    ["analytics", "Analytics", A.total],
+    ["resumes", "Shared resumes", r.resumes.length],
+    ["emails", "Emails", r.subscribers.length],
+    ["downloads", "Downloads", r.total],
+    ["export", "Export", null],
+    ["sql", "SQL query", null],
+    ["settings", "Admin & settings", admins.length],
+  ];
+  let tab = url.searchParams.get("tab") || "";
+  if (post && fmt === "sql") tab = "sql";
+  else if (post && (fmt === "add-admin" || fmt === "password" || fmt === "del-admin")) tab = "settings";
+  if (!TABS.some((t) => t[0] === tab)) tab = "overview";
+  const nav = '<nav class="tabs">' + TABS.map((t) => '<a class="tab' + (t[0] === tab ? " on" : "") + '" href="/admin?tab=' + t[0] + '">' + t[1] + (t[2] == null ? "" : ' <span class="n">' + t[2] + "</span>") + "</a>").join("") + "</nav>";
+  const statsHtml = '<div class="stats"><div class="stat"><b>' + r.total + '</b>All-time downloads</div><div class="stat"><b>' + r.week + '</b>Last 7 days</div><div class="stat"><b>' + r.today + '</b>Last 24 hours</div><div class="stat"><b>' + A.total + '</b>Resumes analyzed</div><div class="stat"><b>' + (A.avg == null ? "-" : A.avg) + '</b>Average match score</div><div class="stat"><b>' + r.subscribers.length + '</b>Emails (optional)</div><div class="stat"><b>' + r.resumes.length + "</b>Resumes shared with consent</div></div>";
+  const exRow = (t, label, desc) => '<div class="exl"><div><b>' + label + '</b><div class="muted" style="font-size:12px">' + desc + '</div></div><div><a class="btn2" href="/admin?format=export&table=' + t + '">CSV</a><a class="btn2" href="/admin?format=export&table=' + t + '&as=json">JSON</a></div></div>';
+  const sections = {
+    overview: statsHtml +
+      '<div class="row"><div class="card"><h2>Downloads by country</h2>' + pills(r.byCountry) + '</div><div class="card"><h2>Downloads by device</h2>' + pills(r.byDevice) + '</div><div class="card"><h2>Downloads by day</h2>' + pills(r.byDay) + "</div></div>" +
+      '<div class="row"><div class="card"><h2>Analyses</h2><div class="muted">' + A.total + " total, " + A.week + ' in last 7 days. <a href="/admin?tab=analytics">Open analytics</a></div></div><div class="card"><h2>Shared resumes</h2><div class="muted">' + r.resumes.length + ' shared with consent. <a href="/admin?tab=resumes">Open</a></div></div><div class="card"><h2>Emails</h2><div class="muted">' + r.subscribers.length + ' left before download. <a href="/admin?tab=emails">Open</a></div></div></div>',
+    analytics: '<div class="card"><h2>Upload analytics - ' + A.total + " analyses, " + A.week + ' in last 7 days</h2><div class="muted" style="font-size:12px;margin:-4px 0 12px">Anonymous: score, job title/company from the JD, and missing keywords. No resume text is kept here.</div><div class="row"><div><h2 style="margin-top:6px">Most common gaps</h2>' + pills(A.gaps) + '</div><div><h2 style="margin-top:6px">Roles people check</h2>' + pills(A.titles) + '</div><div><h2 style="margin-top:6px">Companies</h2>' + pills(A.companies) + '<h2 style="margin-top:14px">Score spread</h2>' + pills(A.buckets) + "</div></div></div>" +
+      '<div class="card"><div class="sec-h"><h2>Latest analyses</h2><span class="muted" style="font-size:12px">' + ex("analyses", "Export") + '</span></div><table><tr><th>When</th><th>Score</th><th>Job title</th><th>Company</th><th>Missing keywords</th><th>Location</th><th></th></tr>' + an + "</table></div>",
+    resumes: '<div class="card"><div class="sec-h"><h2>Resumes shared with consent (' + r.resumes.length + ')</h2><span class="muted" style="font-size:12px">' + ex("shared_resumes", "Export") + '</span></div><div class="muted" style="font-size:12px;margin:0 0 10px">Only people who ticked the optional sharing box. Keep these private; delete on request.</div><table><tr><th>Consent given</th><th>File</th><th>Preview</th><th>Location</th><th>Device</th><th></th></tr>' + rs + "</table></div>",
+    emails: '<div class="card"><div class="sec-h"><h2>Emails left before download (' + r.subscribers.length + ')</h2><span class="muted" style="font-size:12px">' + ex("subscribers", "Export") + "</span></div><table><tr><th>When</th><th>Email</th><th>Location</th><th>Device</th><th></th></tr>" + em + "</table></div>",
+    downloads: '<div class="stats"><div class="stat"><b>' + r.total + '</b>All-time downloads</div><div class="stat"><b>' + r.week + '</b>Last 7 days</div><div class="stat"><b>' + r.today + "</b>Last 24 hours</div></div>" +
+      '<div class="row"><div class="card"><h2>By country</h2>' + pills(r.byCountry) + '</div><div class="card"><h2>By device</h2>' + pills(r.byDevice) + '</div><div class="card"><h2>By day</h2>' + pills(r.byDay) + "</div></div>" +
+      '<div class="card"><div class="sec-h"><h2>Downloads (latest 500)</h2><span class="muted" style="font-size:12px">' + ex("downloads", "Export") + '</span></div><table><tr><th>When</th><th>Location</th><th>Device</th><th>Browser</th><th>User agent</th><th></th></tr>' + dl + "</table></div>",
+    export: '<div class="card exp"><h2>Database export</h2>' + exRow("downloads", "Downloads", "Extension downloads: time, location, device, browser") + exRow("subscribers", "Emails", "Optional emails left before download") + exRow("shared_resumes", "Shared resumes", "Resumes shared with consent (text + metadata)") + exRow("analyses", "Analyses", "Anonymous scores, job titles, companies, gaps") +
+      '<div class="exl"><div><b>Full database</b><div class="muted" style="font-size:12px">Every table in one JSON file</div></div><div><a class="btn" style="text-decoration:none;display:inline-block" href="/admin?format=export&table=all">Download JSON</a></div></div></div>',
+    sql: '<div class="card"><h2>SQL query (read-only)</h2><div class="muted" style="font-size:12px;margin:-4px 0 10px">One SELECT at a time over: downloads, subscribers, analyses, shared_resumes. Max 1000 rows. Example: SELECT company, count(*) FROM analyses GROUP BY 1 ORDER BY 2 DESC</div>' +
+      '<form method="post" action="/admin?format=sql"><textarea name="q" rows="4" placeholder="SELECT * FROM analyses ORDER BY id DESC LIMIT 50">' + esc(sqlText) + '</textarea><div style="margin-top:10px"><button class="btn">Run query</button></div></form>' + sqlOut + "</div>",
+    settings: '<div class="row"><div class="card"><h2>Admin users</h2><table><tr><th>Email</th><th>Added</th><th>Last sign in</th><th></th></tr>' + adm + "</table>" +
+      '<form method="post" action="/admin?format=add-admin" style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap"><input name="email" type="email" placeholder="new admin email" required><input name="password" type="password" placeholder="password (12+ chars)" minlength="12" required autocomplete="new-password"><button class="btn2">Add admin</button></form></div>' +
+      '<div class="card"><h2>Change my password</h2><form method="post" action="/admin?format=password" style="display:flex;gap:8px;flex-wrap:wrap"><input name="current" type="password" placeholder="current password" required autocomplete="current-password"><input name="password" type="password" placeholder="new password (12+ chars)" minlength="12" required autocomplete="new-password"><button class="btn2">Change</button></form></div></div>',
+  };
+  const html = '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>ResumeFit - Admin</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap"><style>' + ADMIN_CSS + "</style></head><body><div class=\"wrap\">" +
+    '<div class="top"><div><h1>Resume<span class="grad">Fit</span> admin</h1><div class="muted">Signed in as <b>' + esc(me.email) + "</b>. Times in UTC. IP addresses are not stored.</div></div>" +
     '<form method="post" action="/admin/logout"><button class="btn2">Sign out</button></form></div>' +
+    nav +
     (note ? '<div class="' + (noteErr ? "err" : "ok") + '">' + esc(note) + "</div>" : "") +
-    '<div class="stats"><div class="stat"><b>' + r.total + '</b>All-time downloads</div><div class="stat"><b>' + r.week + '</b>Last 7 days</div><div class="stat"><b>' + r.today + '</b>Last 24 hours</div><div class="stat"><b>' + A.total + '</b>Resumes analyzed</div><div class="stat"><b>' + (A.avg == null ? "-" : A.avg) + '</b>Average match score</div><div class="stat"><b>' + r.subscribers.length + '</b>Emails (optional)</div><div class="stat"><b>' + r.resumes.length + "</b>Resumes shared with consent</div></div>" +
-    '<div class="card exp"><h2>Database export</h2>' + ex("downloads", "Downloads") + " &nbsp;|&nbsp; " + ex("subscribers", "Emails") + " &nbsp;|&nbsp; " + ex("shared_resumes", "Shared resumes") + " &nbsp;|&nbsp; " + ex("analyses", "Analyses") + ' &nbsp;|&nbsp; <a href="/admin?format=export&table=all"><b>Full database (JSON)</b></a></div>' +
-    '<div class="row"><div class="card"><h2>By country</h2>' + pills(r.byCountry) + '</div><div class="card"><h2>By device</h2>' + pills(r.byDevice) + '</div><div class="card"><h2>By day</h2>' + pills(r.byDay) + "</div></div>" +
-    '<div class="card"><h2>Upload analytics - ' + A.total + " analyses, " + A.week + ' in last 7 days</h2><div class="muted" style="font-size:12px;margin:-4px 0 10px">Anonymous: score, job title/company from the JD, and missing keywords. No resume text is kept here.</div><div class="row"><div><h2 style="margin-top:6px">Most common gaps</h2>' + pills(A.gaps) + '</div><div><h2 style="margin-top:6px">Roles people check</h2>' + pills(A.titles) + '</div><div><h2 style="margin-top:6px">Companies</h2>' + pills(A.companies) + '<h2 style="margin-top:14px">Score spread</h2>' + pills(A.buckets) + "</div></div>" +
-    '<h2 style="margin-top:14px">Latest analyses</h2><table><tr><th>When</th><th>Score</th><th>Job title</th><th>Company</th><th>Missing keywords</th><th>Location</th><th></th></tr>' + an + "</table></div>" +
-    '<div class="card"><h2>Resumes shared with consent (' + r.resumes.length + ')</h2><div class="muted" style="font-size:12px;margin:-4px 0 8px">Only people who ticked the optional sharing box. Keep these private; delete on request.</div><table><tr><th>Consent given</th><th>File</th><th>Preview</th><th>Location</th><th>Device</th><th></th></tr>' + rs + "</table></div>" +
-    '<div class="card"><h2>Emails left before download (' + r.subscribers.length + ")</h2><table><tr><th>When</th><th>Email</th><th>Location</th><th>Device</th><th></th></tr>" + em + "</table></div>" +
-    '<div class="card"><h2>Downloads (latest 500)</h2><table><tr><th>When</th><th>Location</th><th>Device</th><th>Browser</th><th>User agent</th><th></th></tr>' + dl + "</table></div>" +
-    '<div class="card"><h2>SQL query (read-only)</h2><div class="muted" style="font-size:12px;margin:-4px 0 8px">One SELECT at a time over: downloads, subscribers, analyses, shared_resumes. Max 1000 rows. Example: SELECT company, count(*) FROM analyses GROUP BY 1 ORDER BY 2 DESC</div>' +
-    '<form method="post" action="/admin?format=sql"><textarea name="q" rows="3" placeholder="SELECT * FROM analyses ORDER BY id DESC LIMIT 50">' + esc(sqlText) + '</textarea><div style="margin-top:8px"><button class="btn">Run query</button></div></form>' + sqlOut + "</div>" +
-    '<div class="row"><div class="card"><h2>Admin users</h2><table><tr><th>Email</th><th>Added</th><th>Last sign in</th><th></th></tr>' + adm + "</table>" +
-    '<form method="post" action="/admin?format=add-admin" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><input name="email" type="email" placeholder="new admin email" required><input name="password" type="password" placeholder="password (12+ chars)" minlength="12" required autocomplete="new-password"><button class="btn2">Add admin</button></form></div>' +
-    '<div class="card"><h2>Change my password</h2><form method="post" action="/admin?format=password" style="display:flex;gap:8px;flex-wrap:wrap"><input name="current" type="password" placeholder="current password" required autocomplete="current-password"><input name="password" type="password" placeholder="new password (12+ chars)" minlength="12" required autocomplete="new-password"><button class="btn2">Change</button></form></div></div>' +
-    "</body></html>";
+    sections[tab] +
+    "</div></body></html>";
   return new Response(html, { headers: { ...ADMIN_H, "content-type": "text/html; charset=utf-8" } });
 }
 
@@ -1098,20 +1145,29 @@ export default {
         });
     }
     const url = new URL(request.url);
-    // Per-IP hourly rate limits on public endpoints (see rateHit): AI calls and
+    // Per-IP rate limits on public endpoints (see rateHit / rateHitDay): AI calls and
     // job/JD fetches cost real quota, and the write endpoints fill the database.
+    // Hourly burst limits plus daily caps; a normal user never gets near these.
     const RL = {
-      "/api/analyze": ["ai", 40], "/api/cover-letter": ["ai", 40], "/api/interview": ["ai", 40],
-      "/api/linkedin": ["ai", 40], "/api/quick-score": ["ai", 40], "/api/salary": ["ai", 40],
-      "/api/referral-message": ["ai", 40], "/api/jobs": ["fetch", 60], "/api/fetch-jd": ["fetch", 60],
-      "/api/share-resume": ["write", 15], "/api/subscribe": ["write", 15],
+      "/api/analyze": ["ai", 20], "/api/cover-letter": ["ai", 20], "/api/interview": ["ai", 20],
+      "/api/linkedin": ["ai", 20], "/api/quick-score": ["ai", 20], "/api/salary": ["ai", 20],
+      "/api/referral-message": ["ai", 20], "/api/jobs": ["fetch", 60], "/api/fetch-jd": ["fetch", 60],
+      "/api/share-resume": ["write", 10], "/api/subscribe": ["write", 10],
     };
-    const rl = RL[url.pathname];
-    if (rl && (await tooMany(request, env, rl[0], rl[1])))
-      return jsonResponse(
-        { error: "Too many requests from this network. Please wait a while and try again." },
-        429,
-      );
+    const DAILY = {
+      "/api/analyze": ["analyze-day", 10],
+      "/api/cover-letter": ["ai-day", 30], "/api/interview": ["ai-day", 30], "/api/linkedin": ["ai-day", 30],
+      "/api/quick-score": ["ai-day", 30], "/api/salary": ["ai-day", 30], "/api/referral-message": ["ai-day", 30],
+      "/api/jobs": ["fetch-day", 300], "/api/fetch-jd": ["fetch-day", 300],
+      "/api/share-resume": ["write-day", 5], "/api/subscribe": ["write-day", 5],
+    };
+    const rl = RL[url.pathname], rd = DAILY[url.pathname];
+    if (request.method === "POST" || request.method === "GET") {
+      if (rl && (await tooMany(request, env, rl[0], rl[1])))
+        return jsonResponse({ error: "Too many requests from this network. Please wait a while and try again." }, 429);
+      if (rd && (await tooMany(request, env, rd[0], rd[1], true)))
+        return jsonResponse({ error: url.pathname === "/api/analyze" ? "Daily limit reached: 10 resume analyses per day. Please come back tomorrow." : "Daily limit reached for this network. Please try again tomorrow." }, 429);
+    }
     if (request.method === "OPTIONS")
       return new Response(null, {
         headers: {
