@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "ResumeFit - Analyze this job",
+  "version": "1.0.0",
+  "description": "One click on a LinkedIn or Naukri job opens ResumeFit with the job loaded: match score, tailored resume, cover letter and interview prep.",
+  "icons": { "16": "icons/icon16.png", "48": "icons/icon48.png", "128": "icons/icon128.png" },
+  "action": { "default_title": "Analyze this job with ResumeFit", "default_popup": "popup.html", "default_icon": { "16": "icons/icon16.png", "48": "icons/icon48.png" } },
+  "permissions": ["activeTab", "scripting"],
+  "content_scripts": [
+    {
+      "matches": ["https://www.linkedin.com/*", "https://www.naukri.com/*"],
+      "js": ["extract.js", "content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}

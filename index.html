@@ -73,14 +73,87 @@ pre.resume{white-space:pre-wrap;background:var(--card2);border:1px solid var(--b
 .jobmeta{color:var(--muted);font-size:12px}
 footer{text-align:center;color:var(--muted);font-size:12px;margin-top:40px}
 .err{color:var(--red)}
+.nav{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:0 auto 26px;max-width:900px}
+.nav button{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:999px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer}
+.nav button:hover{color:var(--text);border-color:var(--accent)}
+.nav button.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.nav .count{display:inline-block;min-width:18px;margin-left:6px;padding:0 5px;border-radius:99px;background:rgba(255,255,255,.14);font-size:11px}
+.view{display:none}.view.active{display:block}
+.view-head{margin-bottom:18px}.view-head h2{font-size:22px;letter-spacing:-.3px}.view-head p{color:var(--muted);font-size:14px;margin-top:4px}
+input[type=text],input[type=email],select{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:10px 12px;font-size:14px;font-family:inherit}
+input[type=text]:focus,input[type=email]:focus,select:focus{outline:none;border-color:var(--accent)}
+label.lbl{display:block;font-size:12px;color:var(--muted);margin:12px 0 6px;font-weight:600}
+.saved-list{display:grid;gap:8px;margin:16px 0 4px;text-align:left}
+.saved-item{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px 12px}
+.saved-item.active{border-color:var(--accent)}
+.saved-item .t{font-weight:600;font-size:14px}.saved-item .m{font-size:12px;color:var(--muted)}
+.divider{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;margin:18px 0}.divider:before,.divider:after{content:"";flex:1;height:1px;background:var(--border)}
+.tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.tool-btn{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:left;color:var(--text);cursor:pointer;font-family:inherit}
+.tool-btn:hover,.tool-btn.active{border-color:var(--accent)}
+.tool-btn b{display:block;font-size:14px;margin-bottom:3px}.tool-btn span{font-size:12px;color:var(--muted)}
+.tool-panel{display:none;margin-top:16px}.tool-panel.active{display:block}
+.letter{background:#fff;color:#1d2230;border-radius:10px;padding:28px 30px;font-size:14.5px;line-height:1.65;white-space:pre-wrap;font-family:Georgia,"Times New Roman",serif;outline:none}
+.qa{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px}
+.qa .cat{display:inline-block;font-size:10px;text-transform:uppercase;letter-spacing:1px;font-weight:700;color:var(--accent);margin-bottom:6px}
+.qa .q{font-weight:600;font-size:15px}.qa .why{font-size:12px;color:var(--muted);margin-top:4px}
+.qa details{margin-top:8px}.qa summary{cursor:pointer;font-size:13px;color:var(--accent)}.qa .ans{font-size:14px;margin-top:8px}.qa .ev{font-size:12px;color:var(--muted);margin-top:6px}
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.pill{background:var(--card2);border:1px solid var(--border);color:var(--muted);border-radius:999px;padding:5px 11px;font-size:12px;cursor:pointer}.pill.active{color:#fff;background:var(--accent2);border-color:var(--accent2)}
+.stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:14px}
+.stat{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:14px}.stat .v{font-size:24px;font-weight:700}.stat .k{font-size:12px;color:var(--muted)}
+.sal-bar{position:relative;height:14px;background:var(--card2);border-radius:99px;margin:26px 0 30px}
+.sal-bar .rng{position:absolute;top:0;bottom:0;border-radius:99px;background:linear-gradient(90deg,var(--accent2),var(--accent))}
+.sal-bar .lab{position:absolute;top:-22px;font-size:11px;color:var(--muted);transform:translateX(-50%);white-space:nowrap}
+.sal-bar .lab.b{top:18px}
+.board{display:grid;grid-template-columns:repeat(5,minmax(180px,1fr));gap:10px;overflow-x:auto;padding-bottom:6px}
+.col{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px;min-height:120px}
+.col h3{font-size:12px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:2px 4px 10px;display:flex;justify-content:space-between}
+.app{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:8px;font-size:13px}
+.app .t{font-weight:600}.app .c{color:var(--muted);font-size:12px}.app select{margin-top:8px;padding:6px 8px;font-size:12px}
+.app .acts{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}.app .acts button,.app .acts a{font-size:11px;padding:4px 8px}
+a.btn{text-decoration:none;display:inline-block}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}.tbl th{text-align:left;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:1px;padding:8px;border-bottom:1px solid var(--border)}.tbl td{padding:10px 8px;border-bottom:1px solid var(--border);vertical-align:top}
+.scorepill{display:inline-block;min-width:40px;text-align:center;border-radius:99px;padding:3px 8px;font-weight:700;font-size:13px}
+.s-hi{background:#203c2b;color:var(--green)}.s-md{background:#493b24;color:var(--amber)}.s-lo{background:#4a2528;color:var(--red)}
+.delta-up{color:var(--green);font-weight:700}.delta-down{color:var(--red);font-weight:700}
+.jd-slot{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px}
+.jd-slot textarea{min-height:90px}
+.cmp-card{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;display:grid;grid-template-columns:70px 1fr auto;gap:14px;align-items:center}
+.cmp-card .ring{width:62px;height:62px;font-size:20px}
+.cmp-card .rank{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+@media(max-width:620px){.cmp-card{grid-template-columns:62px 1fr}.cmp-card .cmp-acts{grid-column:1/-1}}
+.copybox{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:14px;white-space:pre-wrap;position:relative;margin-bottom:10px}
+.copybox .mini{position:absolute;top:8px;right:8px;padding:4px 9px;font-size:11px}
+.copybox.pad{padding-right:70px}
+.person{display:flex;justify-content:space-between;gap:10px;align-items:center;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;flex-wrap:wrap}
+.steps-list{counter-reset:s;list-style:none}.steps-list li{counter-increment:s;position:relative;padding:10px 0 10px 40px;border-bottom:1px solid var(--border);font-size:14px}.steps-list li:before{content:counter(s);position:absolute;left:0;top:9px;width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700}
+.note{background:#1f2a44;border:1px solid #2f4170;border-radius:10px;padding:12px 14px;font-size:13px;color:#c9d5ff;margin:10px 0}
+.empty{color:var(--muted);font-size:14px;text-align:center;padding:26px 10px}
+pre.resume[contenteditable]{outline:none}pre.resume[contenteditable]:focus{border-color:var(--accent)}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--card2);border:1px solid var(--accent);color:var(--text);padding:10px 16px;border-radius:10px;font-size:13px;z-index:50;opacity:0;transition:opacity .2s;pointer-events:none}.toast.show{opacity:1}
+.legal a,.hint a,#shareConsentRow a{color:var(--accent)}.legal{max-width:860px}
+.chart{width:100%;height:220px;display:block}
+@media print{body *{visibility:hidden}#rewrittenPre,#rewrittenPre *{visibility:visible}#rewrittenPre{position:absolute;left:0;top:0;max-height:none;border:none;background:#fff;color:#000}}
 </style>
 </head>
 <body>
 <div class="wrap">
 <header>
 <h1>Resume<span>Fit</span></h1>
-<p class="sub">Upload your resume and add the job. Get a match score, the flaws, the fluff to cut, recruiter tips, and a tailored rewrite.</p>
+<p class="sub">Upload your resume and add the job. Get a match score, the flaws to fix, a tailored resume PDF, a cover letter, interview prep and salary insights.</p>
 </header>
+<nav class="nav" id="mainNav" aria-label="ResumeFit sections">
+<button data-view="analyze" class="active">Analyze</button>
+<button data-view="compare">Bulk compare</button>
+<button data-view="linkedin">LinkedIn optimizer</button>
+<button data-view="tracker">Tracker<span class="count" id="trackerCount">0</span></button>
+<button data-view="history">Score history</button>
+<button data-view="resumes">My resumes<span class="count" id="resumesCount">0</span></button>
+<button data-view="extension">Chrome extension</button>
+</nav>
+<div class="view active" id="view-analyze">
+
 <div class="steps" aria-label="Resume analysis progress">
 <div class="stepdot active" data-step-dot="1"><span class="stepnum">1</span><span>Upload</span></div><span class="stepline"></span>
 <div class="stepdot" data-step-dot="2"><span class="stepnum">2</span><span>Job</span></div><span class="stepline"></span>
@@ -95,6 +168,15 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:40px}
 <label class="filebtn">Upload PDF / DOCX / TXT<input type="file" id="fileInput" accept=".pdf,.docx,.txt" style="display:none"></label>
 <span class="hint" id="fileHint">Choose a resume file to analyze.</span>
 </div>
+<div id="saveVersionRow" style="display:none;margin-top:16px;text-align:left">
+<label class="lbl" for="versionLabel">Save this resume as a version (stays on this device)</label>
+<div class="row" style="margin-top:0;flex-wrap:nowrap"><input type="text" id="versionLabel" placeholder="e.g. Product Manager, Data Analyst"><button class="mini" id="saveVersionBtn">Save version</button></div>
+</div>
+<div id="savedPicker" style="display:none">
+<div class="divider">or use a saved resume</div>
+<div class="saved-list" id="savedPickerList"></div>
+</div>
+<label id="shareConsentRow" style="display:flex;gap:10px;align-items:flex-start;text-align:left;margin-top:16px;font-size:13px;color:var(--muted);cursor:pointer"><input type="checkbox" id="shareConsent" style="margin-top:3px;width:auto;flex:none"><span>Share my resume with the ResumeFit team so they can review real resumes and improve the analysis. Optional - the tool works the same either way. <a href="#privacy" data-goto="privacy">Privacy Policy</a></span></label>
 <div class="step-actions"><button class="go" id="toJobBtn" disabled>Continue to job</button></div>
 </div>
 </section>
@@ -135,6 +217,50 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:40px}
 <div class="subscores" id="subscores"></div>
 </div>
 </div>
+<div class="card" style="margin-bottom:16px" id="nextSteps">
+<h2>Next steps for this job</h2>
+<div class="tools-grid">
+<button class="tool-btn" data-tool="pdf"><b>Tailored resume PDF</b><span>Clean, ATS-safe, ready to apply</span></button>
+<button class="tool-btn" data-tool="cover"><b>Cover letter</b><span>Written from your resume + this JD</span></button>
+<button class="tool-btn" data-tool="interview"><b>Interview prep</b><span>Likely questions + answer outlines</span></button>
+<button class="tool-btn" data-tool="salary"><b>Salary insights</b><span>Expected CTC range for this role</span></button>
+<button class="tool-btn" data-tool="referral"><b>Referral finder</b><span>People who can refer you</span></button>
+<button class="tool-btn" data-tool="track"><b>Add to tracker</b><span>Log it and track status</span></button>
+</div>
+<div class="tool-panel" id="tool-cover">
+<div class="row"><select id="coverTone" style="width:auto"><option value="professional">Professional</option><option value="warm">Warm</option><option value="confident">Confident</option><option value="concise">Concise</option></select><select id="coverLength" style="width:auto"><option value="standard">Standard length</option><option value="short">Short</option></select><button class="btn primary" id="coverGo">Write cover letter</button></div>
+<div class="hint" id="coverStatus" style="margin-top:10px"></div>
+<div id="coverOut" style="display:none;margin-top:12px">
+<div class="copybox pad" id="coverSubject"></div>
+<div class="letter" id="coverLetter" contenteditable="true" spellcheck="true"></div>
+<p class="hint" style="margin-top:8px">Click the letter to edit it before downloading.</p>
+<div class="row"><button class="btn primary" id="coverCopy">Copy</button><button class="btn" id="coverPdf">Download PDF</button><button class="btn" id="coverTxt">Download .txt</button></div>
+<div id="coverMeta" style="margin-top:12px"></div>
+</div>
+</div>
+<div class="tool-panel" id="tool-interview">
+<div class="row"><button class="btn primary" id="interviewGo">Generate interview prep</button></div>
+<div class="hint" id="interviewStatus" style="margin-top:10px"></div>
+<div id="interviewOut" style="display:none;margin-top:12px">
+<p id="interviewSummary" style="margin-bottom:12px"></p>
+<div class="filters" id="interviewFilters"></div>
+<div id="interviewList"></div>
+<h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 10px">Weak spots they will probe</h2>
+<ul class="clean cuts" id="interviewWeak"></ul>
+<h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 10px">Smart questions to ask them</h2>
+<ul class="clean tips" id="interviewAsk"></ul>
+<div class="row"><button class="btn" id="interviewDownload">Download prep sheet (PDF)</button></div>
+</div>
+</div>
+<div class="tool-panel" id="tool-salary">
+<div class="row"><button class="btn primary" id="salaryGo">Get salary insights</button></div>
+<div class="hint" id="salaryStatus" style="margin-top:10px"></div>
+<div id="salaryOut" style="display:none;margin-top:12px"></div>
+</div>
+<div class="tool-panel" id="tool-referral">
+<div id="referralOut"></div>
+</div>
+</div>
 <div class="card" style="margin-bottom:16px">
 <h2>Priority recommendations</h2>
 <div class="recommendations" id="recommendations"></div>
@@ -153,20 +279,143 @@ footer{text-align:center;color:var(--muted);font-size:12px;margin-top:40px}
 </div>
 <div class="card">
 <h2>Your tailored resume</h2>
-<pre class="resume" id="rewrittenPre"></pre>
+<p class="hint" style="margin-bottom:8px">Accepted and rejected changes above update this resume. Click the text to edit anything before downloading.</p>
+<pre class="resume" id="rewrittenPre" contenteditable="plaintext-only" spellcheck="true"></pre>
 <div class="row" style="margin-top:14px">
-<button class="btn primary" id="copyBtn">Copy</button>
+<button class="btn primary" id="pdfBtn">Download PDF</button>
+<button class="btn" id="copyBtn">Copy</button>
 <button class="btn" id="downloadBtn">Download .txt</button>
-<button class="btn" id="printBtn">Print / Save PDF</button>
+<button class="btn" id="saveTailoredBtn">Save to My resumes</button>
 </div>
 </div>
 </div>
 <div class="step-actions"><button class="btn" id="backToJobBtn">Back to job</button><button class="btn" id="startOverBtn">Start over</button></div>
 </section>
-<footer>Runs on free-tier Cloudflare Workers AI. Your text is sent only to the AI model for analysis.</footer>
+</div>
+<div class="view" id="view-compare">
+<div class="view-head"><h2>Bulk JD compare</h2><p>Score one resume against up to 5 jobs at once and see where to apply first.</p></div>
+<div class="card" style="margin-bottom:14px">
+<label class="lbl" for="cmpResume" style="margin-top:0">Resume</label>
+<select id="cmpResume"></select>
+<p class="hint" id="cmpResumeHint" style="margin-top:6px"></p>
+</div>
+<div id="cmpSlots"></div>
+<div class="row"><button class="btn" id="cmpAdd">+ Add another job</button></div>
+<button class="go" id="cmpGo">Compare all</button>
+<div class="hint" id="cmpStatus" style="text-align:center;margin-top:12px"></div>
+<div id="cmpResults" style="margin-top:20px"></div>
+</div>
+<div class="view" id="view-linkedin">
+<div class="view-head"><h2>LinkedIn profile optimizer</h2><p>Headlines, About section, skills and bullets that recruiters search for - built only from what your resume shows.</p></div>
+<div class="grid">
+<div class="card">
+<label class="lbl" for="liResume" style="margin-top:0">Resume</label>
+<select id="liResume"></select>
+<label class="lbl" for="liTarget">Target role</label>
+<input type="text" id="liTarget" placeholder="e.g. Associate Product Manager">
+</div>
+<div class="card">
+<label class="lbl" for="liProfile" style="margin-top:0">Current LinkedIn headline + About (optional)</label>
+<textarea id="liProfile" style="min-height:120px" placeholder="Paste your current headline and About section to get a before/after score. Leave empty to build from your resume."></textarea>
+</div>
+</div>
+<button class="go" id="liGo">Optimize my LinkedIn</button>
+<div class="hint" id="liStatus" style="text-align:center;margin-top:12px"></div>
+<div id="liOut" style="margin-top:20px"></div>
+</div>
+<div class="view" id="view-tracker">
+<div class="view-head"><h2>Application tracker</h2><p>Every job you apply to, in one place. Saved on this device only.</p></div>
+<div class="stat-row" id="trackerStats"></div>
+<div class="card" style="margin-bottom:14px">
+<h2>Add an application</h2>
+<div class="grid" style="gap:10px">
+<input type="text" id="tAddCompany" placeholder="Company">
+<input type="text" id="tAddTitle" placeholder="Role title">
+<input type="text" id="tAddUrl" placeholder="Job link (optional)">
+<select id="tAddStatus"><option>Saved</option><option selected>Applied</option><option>Interviewing</option><option>Offer</option><option>Rejected</option></select>
+</div>
+<div class="row"><button class="btn primary" id="tAddBtn">Add</button><button class="btn" id="tExport">Export CSV</button></div>
+</div>
+<div class="board" id="trackerBoard"></div>
+</div>
+<div class="view" id="view-history">
+<div class="view-head"><h2>Score history</h2><p>Every analysis you run is saved here so you can see your resume improve over time. Saved on this device only.</p></div>
+<div class="stat-row" id="historyStats"></div>
+<div class="card" style="margin-bottom:14px"><h2>Match score over time</h2><div id="historyChart"></div></div>
+<div class="card"><h2>All analyses</h2><div id="historyTable"></div><div class="row"><button class="btn" id="historyClear">Clear history</button></div></div>
+</div>
+<div class="view" id="view-resumes">
+<div class="view-head"><h2>My resumes</h2><p>Keep a version per role type - PM, analyst, growth - and pick the right one for each job. Saved on this device only.</p></div>
+<div class="card" style="margin-bottom:14px">
+<h2>Add a version</h2>
+<div class="row" style="margin-top:0"><label class="filebtn">Upload PDF / DOCX / TXT<input type="file" id="versionFile" accept=".pdf,.docx,.txt" style="display:none"></label><span class="hint" id="versionFileHint">Upload a resume, name it, save.</span></div>
+<div class="row" style="flex-wrap:nowrap"><input type="text" id="versionFileLabel" placeholder="Version name, e.g. Product Manager"><button class="mini" id="versionFileSave" disabled>Save version</button></div>
+</div>
+<div id="resumeList"></div>
+</div>
+<div class="view" id="view-extension">
+<div class="view-head"><h2>ResumeFit for Chrome</h2><p>One click on any LinkedIn or Naukri job page opens ResumeFit with that job already loaded and your saved resume ready.</p></div>
+<div class="grid">
+<div class="card">
+<h2>Install in under a minute</h2>
+<ol class="steps-list">
+<li><div style="margin-bottom:10px"><label for="extEmail" style="display:block;font-size:13px;font-weight:600;margin-bottom:4px">Get updates - optional</label><input type="email" id="extEmail" placeholder="you@example.com (optional)" style="max-width:320px"><div class="hint" style="margin-top:4px">Leave blank to download without it. If you add it, we only use it to tell you about ResumeFit updates. <a href="#privacy" data-goto="privacy">Privacy Policy</a></div></div><a class="btn primary" id="extDownload" href="/extension.zip" download>Download the extension (.zip)</a></li>
+<li>Unzip it into a folder you will keep.</li>
+<li>Open <b>chrome://extensions</b> in Chrome and turn on <b>Developer mode</b> (top right).</li>
+<li>Click <b>Load unpacked</b> and pick the unzipped folder.</li>
+<li>Open any LinkedIn or Naukri job. Click the blue <b>Analyze with ResumeFit</b> button.</li>
+</ol>
+</div>
+<div class="card">
+<h2>How it works</h2>
+<ul class="clean tips">
+<li>Reads the job title, company and description from the page you are on.</li>
+<li>Opens ResumeFit in a new tab with the job filled in. If you have a saved resume, it goes straight to the job step.</li>
+<li>Works on linkedin.com/jobs and naukri.com job pages. Also available from the toolbar icon on any page with a job description.</li>
+<li>No login. The extension itself does not track you - the job text goes straight into the app in your browser. We only count downloads of the zip (time, country/region, device).</li>
+</ul>
+<p class="note">Save a resume in <b>My resumes</b> first so the one-click flow skips the upload step.</p>
+</div>
+</div>
+</div>
+<div class="view" id="view-about"><div class="view-head"><h2>About ResumeFit</h2><p>A free resume coach built by a job seeker, for job seekers.</p></div><div class="card legal"><p style="font-size:14px;margin-bottom:10px">ResumeFit started from a simple frustration: after dozens of job applications and very few replies, it was clear the resume was the problem - but nobody said exactly what to fix for each job. So we built a tool that does.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">What ResumeFit does</h2><ul style="font-size:14px;margin:0 0 10px 20px"><li style="margin-bottom:6px">Scores your resume against a specific job and shows exactly what to fix, line by line</li><li style="margin-bottom:6px">Rewrites it for that job and gives you a clean, ATS-safe PDF</li><li style="margin-bottom:6px">Writes a cover letter, predicts interview questions, and estimates the salary range</li><li style="margin-bottom:6px">Tracks your applications, keeps a resume version per role, and compares up to 5 jobs at once</li><li style="margin-bottom:6px">Helps you find people who can refer you, and tunes your LinkedIn profile</li></ul><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">What we believe</h2><ul style="font-size:14px;margin:0 0 10px 20px"><li style="margin-bottom:6px"><b>Honest over impressive.</b> ResumeFit never invents experience, numbers or skills. It only rephrases and re-orders what is really in your resume, and tells you plainly when a job needs something you do not have.</li><li style="margin-bottom:6px"><b>Free and no signup.</b> Job hunting is stressful enough. You can use every feature without an account.</li><li style="margin-bottom:6px"><b>Your data stays yours.</b> Saved resumes, history and your tracker live in your own browser, not on our servers. We only keep a resume if you tick the optional sharing box.</li></ul><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">Who is behind it</h2><p style="font-size:14px;margin-bottom:10px">ResumeFit is built and run by Akash Sharma, an aspiring product manager based in India. Feedback shapes what we build next - write to us at <a href="mailto:ashwatthama710@gmail.com">ashwatthama710@gmail.com</a> or use the <a href='#contact' data-goto='contact'>Contact us</a> page.</p></div></div>
+<div class="view" id="view-privacy"><div class="view-head"><h2>Privacy Policy</h2><p>What ResumeFit does with your information, in plain language.</p></div><div class="card legal"><p style="font-size:14px;margin-bottom:10px">ResumeFit (&quot;we&quot;, &quot;us&quot;) is a free resume analysis tool at resumefit-app.ashwatthama710.workers.dev. This policy explains what information is processed when you use it. By using ResumeFit you agree to this policy.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">1. No accounts</h2><p style="font-size:14px;margin-bottom:10px">ResumeFit does not ask you to create an account, and we do not collect your name, email or phone number to use the tool. The only exception is the optional update email described below, which you choose whether to give.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">2. Information you give us and how it is used</h2><ul style="font-size:14px;margin:0 0 10px 20px"><li style="margin-bottom:6px"><b>Resume content.</b> When you upload a PDF, DOCX or TXT file, the text is read inside your browser. When you run an analysis or another AI feature, that text is sent to our server only to produce the result.</li><li style="margin-bottom:6px"><b>Job descriptions and links.</b> Job text you paste, or pages we fetch from a link you provide (for example LinkedIn or Naukri), are used only to produce your result.</li><li style="margin-bottom:6px"><b>Job searches.</b> Search terms you type are sent to third-party job listing services to fetch matching jobs.</li><li style="margin-bottom:6px"><b>LinkedIn profile text</b> you paste into the LinkedIn optimizer is used only to produce suggestions.</li><li style="margin-bottom:6px"><b>Anonymous usage statistics.</b> When you run an analysis we keep a small anonymous record: the match score, the job title and company from the job description, the job keywords your resume was missing, the date, and your approximate country/region and device type. It contains no resume text, name or contact details, and is used only to understand how ResumeFit is used and improve it.</li><li style="margin-bottom:6px"><b>Optional resume sharing.</b> On the upload step there is a checkbox, unticked by default: &quot;Share my resume with the ResumeFit team&quot;. If you leave it unticked, your resume is processed in memory only to produce your results and is never stored on our servers. If you tick it, we store a copy of the resume you continue with (the file and its text), the date and time you agreed, your approximate country/region and device type. Only the site owner can see these copies, and they are used only to review real resumes and improve ResumeFit. They are never sold, published or shared. To have your copy deleted, email us.</li><li style="margin-bottom:6px"><b>Chrome extension downloads.</b> Each time the extension zip is downloaded we log the date and time, the approximate country, region and city that Cloudflare derives from the connection, and the browser user agent (device and browser type). We do not store your IP address. We use this only to count downloads and see where they come from.</li><li style="margin-bottom:6px"><b>Optional update email.</b> On the extension page you can leave your email to get ResumeFit updates. It is optional and the download works without it. If you give it, we store the email with the date, approximate region and device type, and use it only to send ResumeFit updates. To have it deleted, email us.</li></ul><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">3. AI processing</h2><p style="font-size:14px;margin-bottom:10px">Analyses, rewrites, cover letters, interview prep, salary estimates, LinkedIn suggestions and referral messages are generated by an AI model running on Cloudflare Workers AI. Your resume and job text are sent to that model to generate the response. Unless you tick the optional sharing box, we do not store your resume or results on our servers after the response is returned, and we do not use your content to train AI models. AI output can be wrong or incomplete - always review it before you use it.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">4. Data stored on your device</h2><p style="font-size:14px;margin-bottom:10px">Saved resume versions, score history, your application tracker, and any LinkedIn Connections file you import are stored in your browser's local storage on your device. They are not uploaded to our servers, and your imported connections are never sent anywhere. You can delete this data at any time from the app (Delete, Clear history, Remove) or by clearing your browser's site data.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">5. Third-party services</h2><ul style="font-size:14px;margin:0 0 10px 20px"><li style="margin-bottom:6px"><b>Cloudflare</b> hosts the app and runs the AI model. Cloudflare may process technical data such as IP address for security and reliability.</li><li style="margin-bottom:6px"><b>Job listing services</b> (Remotive, Arbeitnow, Jooble, Himalayas, Jobicy, RemoteJobs.org) receive your search terms.</li><li style="margin-bottom:6px"><b>cdnjs</b> serves the open-source libraries used to read PDF/DOCX files and create PDFs.</li><li style="margin-bottom:6px">Pages you pull by link are fetched from the site you point to.</li></ul><p style="font-size:14px;margin-bottom:10px">Each service handles data under its own privacy policy.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">6. Cookies, analytics and ads</h2><p style="font-size:14px;margin-bottom:10px">ResumeFit does not use cookies, tracking pixels or third-party analytics, and does not show ads. The only records we keep are anonymous analysis statistics, the extension download log, optional update emails, and resumes you choose to share, as described in section 2, stored in our Cloudflare database and seen only by the site owner. If we add advertising or analytics in future (for example Google AdSense), we will update this policy first to explain what is collected and how to opt out.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">7. We do not sell your data</h2><p style="font-size:14px;margin-bottom:10px">We do not sell, rent or share your personal information, email or resume content with anyone for marketing.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">8. Security</h2><p style="font-size:14px;margin-bottom:10px">All traffic to ResumeFit uses HTTPS. No online service is perfectly secure, so avoid including details you do not need on a resume, such as ID numbers or bank details.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">9. Children</h2><p style="font-size:14px;margin-bottom:10px">ResumeFit is meant for people aged 16 and over who are looking for work.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">10. Your choices</h2><p style="font-size:14px;margin-bottom:10px">You control your data: you choose what to upload, you can clear everything stored in your browser, and apart from the download log, any email you give and any resume you choose to share, nothing about you is kept on our servers. For any privacy question or request, contact us.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">11. Changes</h2><p style="font-size:14px;margin-bottom:10px">We may update this policy as the product changes. The version on this page is the one that applies.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">12. Contact</h2><p style="font-size:14px;margin-bottom:10px">Email <a href="mailto:ashwatthama710@gmail.com">ashwatthama710@gmail.com</a>.</p></div></div>
+<div class="view" id="view-terms"><div class="view-head"><h2>Terms &amp; Conditions</h2><p>The rules for using ResumeFit.</p></div><div class="card legal"><p style="font-size:14px;margin-bottom:10px">By using ResumeFit you agree to these terms. If you do not agree, please do not use the service.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">1. The service</h2><p style="font-size:14px;margin-bottom:10px">ResumeFit is a free online tool that analyses resumes against job descriptions and generates suggestions, rewritten resumes, cover letters, interview preparation, salary estimates, LinkedIn suggestions and referral messages using AI. Features may change, be added or removed at any time.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">2. Your content</h2><ul style="font-size:14px;margin:0 0 10px 20px"><li style="margin-bottom:6px">You keep full ownership of the resumes, job descriptions and other content you provide.</li><li style="margin-bottom:6px">You give us permission to process that content only to provide the service to you (see the <a href='#privacy' data-goto='privacy'>Privacy Policy</a>).</li><li style="margin-bottom:6px">Only upload content you have the right to use. Do not upload another person's resume without their permission.</li></ul><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">3. Honest use</h2><p style="font-size:14px;margin-bottom:10px">ResumeFit is designed to help you present your real experience well. You agree not to use it to create false or misleading resumes, fake credentials or invented achievements. You are responsible for making sure everything you send to an employer is true.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">4. AI output and no guarantees</h2><p style="font-size:14px;margin-bottom:10px">AI-generated content can contain mistakes. Match scores, salary estimates and interview questions are guidance, not facts or predictions of outcome. ResumeFit does not guarantee interviews, job offers or any hiring result. Review and edit every output before using it. Salary figures are estimates, not offers or financial advice.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">5. Acceptable use</h2><ul style="font-size:14px;margin:0 0 10px 20px"><li style="margin-bottom:6px">Do not misuse the service: no automated scraping, bulk requests, attempts to break or overload it, or attempts to access other people's data.</li><li style="margin-bottom:6px">Do not use it for anything unlawful, or to upload malicious files.</li><li style="margin-bottom:6px">The free AI capacity is shared; we may limit usage to keep the service available for everyone.</li></ul><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">6. Third-party content and links</h2><p style="font-size:14px;margin-bottom:10px">Job listings, job pages and LinkedIn searches come from third-party sites. We do not control them and are not responsible for their accuracy or availability. Using those sites is subject to their own terms.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">7. Chrome extension</h2><p style="font-size:14px;margin-bottom:10px">The ResumeFit Chrome extension reads the job details on the page you choose to analyse and opens them in ResumeFit. It is provided as-is and may stop working if those sites change their layout.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">8. Availability</h2><p style="font-size:14px;margin-bottom:10px">The service is provided free, &quot;as is&quot; and &quot;as available&quot;, without warranties of any kind. It may be interrupted, slow or unavailable at times.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">9. Limitation of liability</h2><p style="font-size:14px;margin-bottom:10px">To the fullest extent allowed by law, ResumeFit and its creator are not liable for any indirect or consequential loss, or for any decision you make based on the service's output.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">10. Changes and law</h2><p style="font-size:14px;margin-bottom:10px">We may update these terms; continued use means you accept the updated terms. These terms are governed by the laws of India.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">11. Contact</h2><p style="font-size:14px;margin-bottom:10px">Questions about these terms: <a href="mailto:ashwatthama710@gmail.com">ashwatthama710@gmail.com</a>.</p></div></div>
+<div class="view" id="view-contact">
+<div class="view-head"><h2>Contact us</h2><p>Questions, feedback, a bug, or a feature you want? We read every message.</p></div>
+<div class="grid">
+<div class="card">
+<h2>Send a message</h2>
+<label class="lbl" for="ctName" style="margin-top:0">Your name</label>
+<input type="text" id="ctName" placeholder="Your name">
+<label class="lbl" for="ctEmail">Your email</label>
+<input type="text" id="ctEmail" placeholder="you@example.com">
+<label class="lbl" for="ctTopic">Topic</label>
+<select id="ctTopic"><option>Feedback</option><option>Bug report</option><option>Feature request</option><option>Partnership</option><option>Other</option></select>
+<label class="lbl" for="ctMsg">Message</label>
+<textarea id="ctMsg" style="min-height:140px" placeholder="How can we help?"></textarea>
+<div class="row"><button class="btn primary" id="ctSend">Send message</button><span class="hint" id="ctHint"></span></div>
+<p class="hint" style="margin-top:10px">This opens your email app with the message ready to send.</p>
+</div>
+<div class="card">
+<h2>Email us directly</h2>
+<p style="font-size:16px;margin-bottom:6px"><a href="mailto:ashwatthama710@gmail.com" style="color:var(--accent)">ashwatthama710@gmail.com</a></p>
+<p class="hint" style="margin-bottom:16px">We usually reply within 1-2 working days.</p>
+<ul class="clean tips">
+<li><b>Bug reports:</b> tell us what you clicked, what you expected, and your browser or phone model. A screenshot helps.</li>
+<li><b>Feature ideas:</b> tell us the job-search problem you are trying to solve.</li>
+<li><b>Privacy:</b> ResumeFit has no accounts. Saved resumes, history and tracker data stay in your browser. Resume text is sent only to the AI model to run the analysis.</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<footer><div style="margin-bottom:8px"><a href="#about" data-goto="about" style="color:var(--accent);text-decoration:none;margin:0 8px">About us</a><a href="#contact" data-goto="contact" style="color:var(--accent);text-decoration:none;margin:0 8px">Contact us</a><a href="#privacy" data-goto="privacy" style="color:var(--accent);text-decoration:none;margin:0 8px">Privacy Policy</a><a href="#terms" data-goto="terms" style="color:var(--accent);text-decoration:none;margin:0 8px">Terms &amp; Conditions</a></div>Free, no signup. Your resume text is sent to the AI model for analysis and is not stored unless you choose to share it. Saved resumes, history, tracker and connections stay in your browser on this device.</footer>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 (function(){
 var API="";
@@ -181,7 +430,18 @@ var dots=document.querySelectorAll("[data-step-dot]");
 for(var j=0;j<dots.length;j++){dots[j].classList.toggle("active",parseInt(dots[j].getAttribute("data-step-dot"),10)===n);}
 window.scrollTo({top:0,behavior:"smooth"});
 }
-document.getElementById("toJobBtn").addEventListener("click",function(){if(resumeInput.value.trim())goStep(2);});
+window.rfGoStep=goStep;
+var rfLastFile=null,rfSharedKey="";
+function rfShareResume(){
+var cb=document.getElementById("shareConsent");if(!cb||!cb.checked)return;
+var text=resumeInput.value.trim();if(!text)return;
+var key=text.length+":"+text.slice(0,80);if(key===rfSharedKey)return;rfSharedKey=key;
+var payload={consent:true,consent_text:cb.parentNode.textContent.replace("Privacy Policy","").trim(),text:text.slice(0,60000)};
+function send(){fetch("/api/share-resume",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(payload),keepalive:!payload.file_b64}).catch(function(){});}
+var f=rfLastFile;
+if(f&&f.size<=1500000){var r=new FileReader();r.onload=function(){payload.filename=f.name;payload.mime=f.type||"";payload.file_b64=String(r.result).split(",")[1]||"";send();};r.onerror=send;r.readAsDataURL(f);}else send();
+}
+document.getElementById("toJobBtn").addEventListener("click",function(){if(resumeInput.value.trim()){rfShareResume();goStep(2);}});
 document.getElementById("backToUploadBtn").addEventListener("click",function(){goStep(1);});
 document.getElementById("backToJobBtn").addEventListener("click",function(){goStep(2);});
 document.getElementById("startOverBtn").addEventListener("click",function(){document.getElementById("results").style.display="none";goStep(1);});
@@ -189,6 +449,7 @@ if(window.pdfjsLib){pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudf
 fileInput.addEventListener("change",async function(){
 var f=fileInput.files&&fileInput.files[0];
 if(!f)return;
+rfLastFile=f;
 var name=f.name.toLowerCase();
 var hint=document.getElementById("fileHint");
 var next=document.getElementById("toJobBtn");
@@ -222,8 +483,9 @@ throw new Error("Unsupported file. Use PDF, DOCX or TXT.");
 text=String(text||"").trim();
 if(!text)throw new Error("No readable text found in this file.");
 resumeInput.value=text;
-hint.textContent=f.name+" loaded"+(name.slice(-4)===".pdf"?".":".");
+hint.textContent=f.name+" loaded.";
 next.disabled=false;
+if(window.rfOnResumeLoaded)window.rfOnResumeLoaded(text,f.name);
 }catch(e){
 hint.innerHTML="<span class=err>"+esc(e&&e.message?e.message:"Could not read that file.")+"</span>";
 next.disabled=true;
@@ -250,6 +512,15 @@ btn.disabled=false;
 btn.textContent="Pull from link";
 });
 });
+window.rfReadResumeFile=async function(f){
+var name=f.name.toLowerCase();
+function withTimeout(p){return Promise.race([p,new Promise(function(_,reject){setTimeout(function(){reject(new Error("Reading timed out"));},30000);})]);}
+var text="";
+if(name.slice(-4)===".txt"){text=await withTimeout(f.text());}
+else if(name.slice(-4)===".pdf"){if(!window.pdfjsLib)throw new Error("PDF reader did not load");var pdf=await withTimeout(pdfjsLib.getDocument({data:new Uint8Array(await withTimeout(f.arrayBuffer()))}).promise);var pages=[];for(var i=1;i<=pdf.numPages;i++){var page=await withTimeout(pdf.getPage(i));var tc=await withTimeout(page.getTextContent());var line=[];for(var j=0;j<tc.items.length;j++)line.push(tc.items[j].str);pages.push(line.join(" "));}text=pages.join("\n\n");}
+else if(name.slice(-5)===".docx"){if(!window.mammoth)throw new Error("DOCX reader did not load");var res=await withTimeout(mammoth.extractRawText({arrayBuffer:await withTimeout(f.arrayBuffer())}));text=res.value||"";}
+else throw new Error("Unsupported file. Use PDF, DOCX or TXT.");
+text=String(text||"").trim();if(!text)throw new Error("No readable text found in this file.");return text;};
 var lastJobs=[];
 var jobsShown=0;
 document.getElementById("jobSearchBtn").addEventListener("click",function(){
@@ -306,6 +577,7 @@ return resp.json().then(function(data){
 if(!resp.ok||data.error){throw new Error(data.error||"Analysis failed.");}
 showResults(data);
 statusEl.textContent="";
+if(window.rfOnResults)window.rfOnResults(data,resume,job);
 });
 }).catch(function(e){
 statusEl.innerHTML="<span class=err>"+esc(e.message||"Something went wrong. Please try again.")+"</span>";
@@ -314,6 +586,7 @@ btn.disabled=false;
 btn.textContent="Analyze my resume";
 });
 });
+window.rfShowResults=function(d,fromHistory){showResults(d);if(window.rfOnResults)window.rfOnResults(d,resumeInput.value,jdInput.value,true);};
 function showResults(d){
 var score=Math.max(0,Math.min(100,parseInt(d.score,10)||0));
 var ring=document.getElementById("ring");
@@ -334,7 +607,7 @@ var kd=document.getElementById("keywordCoverage");kd.innerHTML="";var kws=d.keyw
 for(var ki=0;ki<kws.length;ki++){var kw=kws[ki]||{};var row=document.createElement("div");row.className="keyword-row";var name=document.createElement("strong");name.textContent=kw.keyword||"";var freq=document.createElement("span");freq.className="frequency";freq.textContent="JD × "+(parseInt(kw.frequency,10)||0);var cov=document.createElement("span");cov.className="coverage "+(kw.covered?"covered":"missing");cov.textContent=kw.covered?"Covered":"Missing";row.appendChild(name);row.appendChild(freq);row.appendChild(cov);kd.appendChild(row);}
 if(!kws.length){kd.innerHTML='<span class="hint">No keyword coverage data returned.</span>';}
 var changes=d.rewrite_changes||[];var ch=document.getElementById("rewriteChanges");ch.innerHTML="";
-for(var ci=0;ci<changes.length;ci++){(function(change){var box=document.createElement("div");box.className="rewrite-change";var cols=document.createElement("div");cols.className="rewrite-cols";var before=document.createElement("div");before.className="rewrite-pane before";before.innerHTML='<div class="rewrite-label">Before</div>';before.appendChild(document.createTextNode(change.before||""));var after=document.createElement("div");after.className="rewrite-pane after";after.innerHTML='<div class="rewrite-label">After</div>';after.appendChild(document.createTextNode(change.after||""));cols.appendChild(before);cols.appendChild(after);box.appendChild(cols);var why=document.createElement("div");why.className="rewrite-reason";why.textContent=change.reason||"";box.appendChild(why);var dec=document.createElement("div");dec.className="decision";var accept=document.createElement("button");accept.className="btn";accept.textContent="Accept";var reject=document.createElement("button");reject.className="btn";reject.textContent="Reject";accept.onclick=function(){box.className="rewrite-change accepted";accept.classList.add("selected");reject.classList.remove("selected");};reject.onclick=function(){box.className="rewrite-change rejected";reject.classList.add("selected");accept.classList.remove("selected");};dec.appendChild(accept);dec.appendChild(reject);box.appendChild(dec);ch.appendChild(box);})(changes[ci]||{});}
+for(var ci=0;ci<changes.length;ci++){(function(change){var box=document.createElement("div");box.className="rewrite-change";var cols=document.createElement("div");cols.className="rewrite-cols";var before=document.createElement("div");before.className="rewrite-pane before";before.innerHTML='<div class="rewrite-label">Before</div>';before.appendChild(document.createTextNode(change.before||""));var after=document.createElement("div");after.className="rewrite-pane after";after.innerHTML='<div class="rewrite-label">After</div>';after.appendChild(document.createTextNode(change.after||""));cols.appendChild(before);cols.appendChild(after);box.appendChild(cols);var why=document.createElement("div");why.className="rewrite-reason";why.textContent=change.reason||"";box.appendChild(why);var dec=document.createElement("div");dec.className="decision";var accept=document.createElement("button");accept.className="btn";accept.textContent="Accept";var reject=document.createElement("button");reject.className="btn";reject.textContent="Reject";accept.onclick=function(){box.className="rewrite-change accepted";if(window.rfApplyChange)window.rfApplyChange(change,true);accept.classList.add("selected");reject.classList.remove("selected");};reject.onclick=function(){box.className="rewrite-change rejected";if(window.rfApplyChange)window.rfApplyChange(change,false);reject.classList.add("selected");accept.classList.remove("selected");};dec.appendChild(accept);dec.appendChild(reject);box.appendChild(dec);ch.appendChild(box);})(changes[ci]||{});}
 if(!changes.length){ch.innerHTML='<span class="hint">No line-by-line changes returned.</span>';}
 document.getElementById("rewrittenPre").textContent=d.rewritten_resume||"";
 document.getElementById("results").style.display="block";
@@ -358,8 +631,486 @@ a.href=URL.createObjectURL(blob);
 a.download="tailored-resume.txt";
 a.click();
 });
-document.getElementById("printBtn").addEventListener("click",function(){window.print();});
 })();
+</script>
+<script>
+(function(){
+"use strict";
+var $=function(id){return document.getElementById(id);};
+function esc(s){var d=document.createElement("div");d.textContent=s==null?"":String(s);return d.innerHTML;}
+function toast(msg){var t=$("toast");t.textContent=msg;t.classList.add("show");clearTimeout(toast._t);toast._t=setTimeout(function(){t.classList.remove("show");},2200);}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+function load(k,def){try{var v=JSON.parse(localStorage.getItem(k));return v==null?def:v;}catch(e){return def;}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true;}catch(e){toast("Browser storage is full - clear some history.");return false;}}
+function fmtDate(ts){var d=new Date(ts);return d.toLocaleDateString(undefined,{day:"numeric",month:"short"})+" "+d.toLocaleTimeString(undefined,{hour:"2-digit",minute:"2-digit"});}
+function scoreCls(s){return s>=70?"s-hi":(s>=45?"s-md":"s-lo");}
+function scoreCol(s){return s>=70?"var(--green)":(s>=45?"var(--amber)":"var(--red)");}
+function clampScore(v){return Math.max(0,Math.min(100,parseInt(v,10)||0));}
+function copyText(t){return navigator.clipboard.writeText(t).then(function(){toast("Copied");},function(){toast("Copy failed - select and copy manually");});}
+function post(path,body){return fetch(path,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)}).then(function(r){return r.json().catch(function(){return {error:"Unexpected response."};}).then(function(d){if(!r.ok||d.error)throw new Error(d.error||"Request failed.");return d;});});}
+function download(name,blob){var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},500);}
+function slug(s){return String(s||"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,40)||"file";}
+
+/* ---------- Views ---------- */
+var navBtns=document.querySelectorAll("#mainNav button");
+function showView(name){
+  for(var i=0;i<navBtns.length;i++)navBtns[i].classList.toggle("active",navBtns[i].getAttribute("data-view")===name);
+  var views=document.querySelectorAll(".view");for(var j=0;j<views.length;j++)views[j].classList.toggle("active",views[j].id==="view-"+name);
+  document.querySelector(".steps").style.display=name==="analyze"?"":"none";
+  if(name==="tracker")renderTracker();
+  if(name==="history")renderHistory();
+  if(name==="resumes")renderResumes();
+  if(name==="compare")fillResumeSelect($("cmpResume"));
+  if(name==="linkedin")fillResumeSelect($("liResume"));
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+for(var n=0;n<navBtns.length;n++)navBtns[n].addEventListener("click",function(){showView(this.getAttribute("data-view"));});
+
+/* ---------- Resume versions ---------- */
+var RES_KEY="rf_resumes",ACTIVE_KEY="rf_active_resume";
+function resumes(){return load(RES_KEY,[]);}
+function currentResumeText(){return ($("resumeInput").value||"").trim();}
+function saveResumeVersion(label,text,filename){
+  var list=resumes();label=(label||"").trim()||"My resume";
+  var existing=null;for(var i=0;i<list.length;i++)if(list[i].label.toLowerCase()===label.toLowerCase())existing=list[i];
+  if(existing){existing.text=text;existing.filename=filename||existing.filename;existing.updated=Date.now();}
+  else{existing={id:uid(),label:label,text:text,filename:filename||"",updated:Date.now()};list.unshift(existing);}
+  if(save(RES_KEY,list)){save(ACTIVE_KEY,existing.id);updateCounts();renderSavedPicker();}
+  return existing;
+}
+function useResume(r){
+  $("resumeInput").value=r.text;save(ACTIVE_KEY,r.id);
+  $("fileHint").textContent="Using saved resume: "+r.label;
+  rfLastFile=null;$("toJobBtn").disabled=false;$("saveVersionRow").style.display="none";
+  renderSavedPicker();
+}
+function renderSavedPicker(){
+  var list=resumes(),box=$("savedPickerList"),act=load(ACTIVE_KEY,"");
+  $("savedPicker").style.display=list.length?"block":"none";box.innerHTML="";
+  list.forEach(function(r){
+    var el=document.createElement("div");el.className="saved-item"+(r.id===act&&currentResumeText()===r.text?" active":"");
+    el.innerHTML='<div><div class="t">'+esc(r.label)+'</div><div class="m">'+esc(r.filename||"")+(r.filename?" - ":"")+"updated "+esc(fmtDate(r.updated))+'</div></div>';
+    var b=document.createElement("button");b.className="mini";b.textContent=(r.id===act&&currentResumeText()===r.text)?"Selected":"Use this";
+    b.onclick=function(){useResume(r);};el.appendChild(b);box.appendChild(el);
+  });
+}
+window.rfOnResumeLoaded=function(text,filename){
+  $("saveVersionRow").style.display="block";
+  var base=(filename||"").replace(/\.(pdf|docx|txt)$/i,"").replace(/[_-]+/g," ").trim();
+  $("versionLabel").value=$("versionLabel").value||base||"My resume";
+  // Keep the latest upload available for the extension flow and other tools.
+  save("rf_last_upload",{text:text,filename:filename,at:Date.now()});
+  renderSavedPicker();
+};
+$("saveVersionBtn").addEventListener("click",function(){
+  var t=currentResumeText();if(!t)return;
+  var r=saveResumeVersion($("versionLabel").value,t,load("rf_last_upload",{}).filename);
+  $("saveVersionRow").style.display="none";toast("Saved as "+r.label);
+});
+function fillResumeSelect(sel){
+  var list=resumes(),cur=currentResumeText(),prev=sel.value;sel.innerHTML="";
+  if(cur){var o=document.createElement("option");o.value="__current";o.textContent="Resume currently loaded in Analyze";sel.appendChild(o);}
+  list.forEach(function(r){var o=document.createElement("option");o.value=r.id;o.textContent=r.label;sel.appendChild(o);});
+  if(!sel.options.length){var o2=document.createElement("option");o2.value="";o2.textContent="No resume yet - upload one in Analyze or My resumes";sel.appendChild(o2);}
+  if(prev){for(var i=0;i<sel.options.length;i++)if(sel.options[i].value===prev)sel.value=prev;}
+}
+function resumeFromSelect(sel){
+  if(sel.value==="__current")return currentResumeText();
+  var list=resumes();for(var i=0;i<list.length;i++)if(list[i].id===sel.value)return list[i].text;return "";
+}
+function renderResumes(){
+  var list=resumes(),box=$("resumeList");box.innerHTML="";
+  if(!list.length){box.innerHTML='<div class="card empty">No saved versions yet. Upload a resume above or save one from the Analyze step.</div>';return;}
+  var hist=load(HIST_KEY,[]);
+  list.forEach(function(r){
+    var runs=hist.filter(function(h){return h.resumeId===r.id;});
+    var best=runs.reduce(function(m,h){return Math.max(m,h.score);},0);
+    var el=document.createElement("div");el.className="card";el.style.marginBottom="10px";
+    el.innerHTML='<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center"><div><div style="font-weight:700;font-size:16px">'+esc(r.label)+'</div><div class="hint">'+esc(r.filename||"")+(r.filename?" - ":"")+'updated '+esc(fmtDate(r.updated))+' - '+r.text.split(/\s+/).length+' words - '+runs.length+' analyses'+(runs.length?' - best match '+best:'')+'</div></div><div class="row" style="margin-top:0"></div></div><pre class="resume" style="max-height:160px;margin-top:10px;font-size:12px"></pre>';
+    el.querySelector("pre").textContent=r.text.slice(0,1400)+(r.text.length>1400?"...":"");
+    var acts=el.querySelector(".row");
+    var use=document.createElement("button");use.className="btn primary";use.textContent="Analyze with this";use.onclick=function(){useResume(r);showView("analyze");window.rfGoStep(2);};
+    var ren=document.createElement("button");ren.className="btn";ren.textContent="Rename";ren.onclick=function(){var nv=prompt("New name for this version",r.label);if(nv&&nv.trim()){var l=resumes();l.forEach(function(x){if(x.id===r.id)x.label=nv.trim();});save(RES_KEY,l);renderResumes();renderSavedPicker();}};
+    var del=document.createElement("button");del.className="btn";del.textContent="Delete";del.onclick=function(){if(!confirm("Delete "+r.label+"?"))return;save(RES_KEY,resumes().filter(function(x){return x.id!==r.id;}));updateCounts();renderResumes();renderSavedPicker();};
+    acts.appendChild(use);acts.appendChild(ren);acts.appendChild(del);box.appendChild(el);
+  });
+}
+var versionText="",versionName="";
+$("versionFile").addEventListener("change",function(){
+  var f=this.files&&this.files[0];if(!f)return;$("versionFileHint").textContent="Reading "+f.name+"...";$("versionFileSave").disabled=true;
+  window.rfReadResumeFile(f).then(function(t){versionText=t;versionName=f.name;$("versionFileHint").textContent=f.name+" loaded.";$("versionFileSave").disabled=false;if(!$("versionFileLabel").value)$("versionFileLabel").value=f.name.replace(/\.(pdf|docx|txt)$/i,"").replace(/[_-]+/g," ");})
+  .catch(function(e){$("versionFileHint").innerHTML='<span class="err">'+esc(e.message)+'</span>';});
+});
+$("versionFileSave").addEventListener("click",function(){if(!versionText)return;var r=saveResumeVersion($("versionFileLabel").value,versionText,versionName);versionText="";$("versionFileLabel").value="";$("versionFileSave").disabled=true;$("versionFileHint").textContent="Saved "+r.label+".";renderResumes();});
+
+/* ---------- Results hooks: history, tools ---------- */
+var HIST_KEY="rf_history";
+var last=null; // {data,resume,job,title,company,url}
+function activeResumeId(){var act=load(ACTIVE_KEY,""),t=currentResumeText();var l=resumes();for(var i=0;i<l.length;i++)if(l[i].id===act&&l[i].text===t)return l[i].id;for(var j=0;j<l.length;j++)if(l[j].text===t)return l[j].id;return "";}
+function resumeLabel(id){var l=resumes();for(var i=0;i<l.length;i++)if(l[i].id===id)return l[i].label;return "Unsaved upload";}
+function guessTitle(job){var first=String(job||"").split("\n").map(function(s){return s.trim();}).filter(Boolean)[0]||"Job";return first.slice(0,80);}
+window.rfOnResults=function(d,resume,job,fromHistory){
+  last={data:d,resume:resume,job:job,title:d.job_title||guessTitle(job),company:d.company||"",url:($("jdUrl").value||"").trim()};
+  resetTools();
+  if(fromHistory)return;
+  var hist=load(HIST_KEY,[]);
+  var rid=activeResumeId();
+  var entry={id:uid(),at:Date.now(),title:last.title,company:last.company,score:clampScore(d.score),subscores:d.subscores||{},resumeId:rid,resumeLabel:resumeLabel(rid),jobKey:slug(last.company+" "+last.title),url:last.url};
+  var prev=null;for(var i=0;i<hist.length;i++)if(hist[i].jobKey===entry.jobKey){prev=hist[i];break;}
+  entry.delta=prev?entry.score-prev.score:null;
+  // Keep full results for the latest 25 runs so they can be reopened.
+  entry.full={data:d,resume:resume.slice(0,12000),job:job.slice(0,8000)};
+  hist.unshift(entry);
+  hist.forEach(function(h,idx){if(idx>=25)delete h.full;});
+  hist=hist.slice(0,200);
+  if(!save(HIST_KEY,hist)){hist.forEach(function(h,idx){if(idx>=5)delete h.full;});save(HIST_KEY,hist);}
+  if(entry.delta!==null)toast("Match "+(entry.delta>=0?"up ":"down ")+Math.abs(entry.delta)+" vs last time for this job");
+};
+
+/* ---------- Accept / reject keeps the tailored resume in sync ---------- */
+window.rfApplyChange=function(change,accepted){
+  var pre=$("rewrittenPre"),t=pre.textContent,b=change.before||"",a=change.after||"";
+  if(!b||!a)return;
+  if(!accepted&&t.indexOf(a)>=0)pre.textContent=t.replace(a,b);
+  if(accepted&&t.indexOf(a)<0&&t.indexOf(b)>=0)pre.textContent=t.replace(b,a);
+};
+
+/* ---------- PDF helpers ---------- */
+function newPdf(){if(!window.jspdf||!window.jspdf.jsPDF)throw new Error("PDF engine did not load. Refresh and try again.");return new window.jspdf.jsPDF({unit:"pt",format:"a4"});}
+function pdfSafe(s){return String(s||"").replace(/[\u2018\u2019]/g,"'").replace(/[\u201C\u201D]/g,'"').replace(/[\u2013\u2014]/g,"-").replace(/[\u2022\u25CF\u25AA\u2023\u2043\u27A2\u25BA]/g,"-").replace(/\u20B9/g,"Rs ").replace(/[^\x09\x0A\x0D\x20-\x7E\xA0-\xFF]/g,"");}
+function resumePdf(text){
+  var doc=newPdf(),W=doc.internal.pageSize.getWidth(),H=doc.internal.pageSize.getHeight(),M=48,y=M,maxW=W-2*M;
+  var lines=pdfSafe(text).split(/\r?\n/);
+  while(lines.length&&!lines[0].trim())lines.shift();
+  function need(h){if(y+h>H-M){doc.addPage();y=M;}}
+  function isHeading(s){var t=s.trim();return t.length>2&&t.length<42&&/^[A-Z0-9 &/,'()+.-]+$/.test(t)&&/[A-Z]{3}/.test(t)&&!/^[-*]/.test(t);}
+  // Name
+  if(lines.length){doc.setFont("helvetica","bold");doc.setFontSize(20);doc.setTextColor(20,24,36);doc.text(lines.shift().trim(),M,y+6);y+=24;}
+  // Contact lines until first blank or heading
+  doc.setFont("helvetica","normal");doc.setFontSize(9.5);doc.setTextColor(80,86,100);
+  var contact=[];while(lines.length&&lines[0].trim()&&!isHeading(lines[0])&&contact.length<3){contact.push(lines.shift().trim());}
+  if(contact.length){var ct=doc.splitTextToSize(contact.join("  |  "),maxW);doc.text(ct,M,y);y+=ct.length*12+4;}
+  doc.setTextColor(28,32,44);
+  lines.forEach(function(raw){
+    var s=raw.replace(/\s+$/,"");
+    if(!s.trim()){y+=5;return;}
+    if(isHeading(s)){need(30);y+=8;doc.setFont("helvetica","bold");doc.setFontSize(11);doc.setTextColor(40,70,170);doc.text(s.trim(),M,y);y+=4;doc.setDrawColor(200,206,222);doc.setLineWidth(0.8);doc.line(M,y,W-M,y);y+=13;doc.setTextColor(28,32,44);return;}
+    var bullet=/^\s*[-*•]\s+/.test(s);var body=bullet?s.replace(/^\s*[-*•]\s+/,""):s.trim();
+    doc.setFont("helvetica",(!bullet&&/\|/.test(body)&&body.length<120)?"bold":"normal");doc.setFontSize(10);
+    var wrapped=doc.splitTextToSize(body,bullet?maxW-12:maxW);need(wrapped.length*13);
+    if(bullet){doc.text("-",M+2,y);doc.text(wrapped,M+12,y);}else{doc.text(wrapped,M,y);}
+    y+=wrapped.length*13;
+  });
+  return doc;
+}
+function letterPdf(subjectLine,text,name){
+  var doc=newPdf(),W=doc.internal.pageSize.getWidth(),H=doc.internal.pageSize.getHeight(),M=64,y=M,maxW=W-2*M;
+  if(name){doc.setFont("helvetica","bold");doc.setFontSize(16);doc.setTextColor(20,24,36);doc.text(pdfSafe(name),M,y);y+=26;}
+  doc.setFont("times","normal");doc.setFontSize(11.5);doc.setTextColor(30,30,30);
+  pdfSafe(text).split(/\n/).forEach(function(p){if(!p.trim()){y+=8;return;}var w=doc.splitTextToSize(p,maxW);if(y+w.length*16>H-M){doc.addPage();y=M;}doc.text(w,M,y);y+=w.length*16;});
+  return doc;
+}
+$("pdfBtn").addEventListener("click",function(){
+  try{var t=$("rewrittenPre").textContent.trim();if(!t)return;var nm=t.split("\n")[0].trim();resumePdf(t).save(slug(nm)+"-"+slug(last&&last.company?last.company:(last?last.title:"resume"))+".pdf");toast("PDF downloaded");}catch(e){toast(e.message);}
+});
+$("saveTailoredBtn").addEventListener("click",function(){
+  var t=$("rewrittenPre").textContent.trim();if(!t)return;
+  var lbl=prompt("Name this tailored version",(last&&last.title?last.title:"Tailored")+(last&&last.company?" - "+last.company:""));if(!lbl)return;
+  saveResumeVersion(lbl,t,"tailored");toast("Saved to My resumes");
+});
+
+/* ---------- Tools panel ---------- */
+var toolBtns=document.querySelectorAll("[data-tool]");
+function resetTools(){
+  for(var i=0;i<toolBtns.length;i++)toolBtns[i].classList.remove("active");
+  var ps=document.querySelectorAll(".tool-panel");for(var j=0;j<ps.length;j++)ps[j].classList.remove("active");
+  ["coverOut","interviewOut","salaryOut"].forEach(function(id){$(id).style.display="none";});
+  ["coverStatus","interviewStatus","salaryStatus"].forEach(function(id){$(id).textContent="";});
+  $("referralOut").innerHTML="";
+}
+for(var tb=0;tb<toolBtns.length;tb++)toolBtns[tb].addEventListener("click",function(){
+  var tool=this.getAttribute("data-tool");
+  if(tool==="pdf"){$("pdfBtn").click();return;}
+  if(tool==="track"){addFromLast();return;}
+  for(var i=0;i<toolBtns.length;i++)toolBtns[i].classList.toggle("active",toolBtns[i]===this);
+  var ps=document.querySelectorAll(".tool-panel");for(var j=0;j<ps.length;j++)ps[j].classList.toggle("active",ps[j].id==="tool-"+tool);
+  if(tool==="referral")renderReferral();
+});
+function busy(btn,on,label){btn.disabled=on;if(on){btn._l=btn.textContent;btn.textContent=label||"Working...";}else if(btn._l){btn.textContent=btn._l;}}
+
+// Cover letter
+var coverData=null;
+$("coverGo").addEventListener("click",function(){
+  if(!last)return;var btn=this;busy(btn,true,"Writing...");$("coverStatus").textContent="Writing from your resume and this job. About 10-20 seconds.";
+  post("/api/cover-letter",{resume:$("rewrittenPre").textContent||last.resume,job:last.job,tone:$("coverTone").value,length:$("coverLength").value}).then(function(d){
+    coverData=d;$("coverStatus").textContent="";
+    var body=[d.greeting,""].concat(d.paragraphs.join("\n\n").split("\n")).concat(["",d.sign_off,d.candidate_name||""]).join("\n");
+    $("coverLetter").textContent=body.trim();
+    $("coverSubject").innerHTML='<b>Email subject:</b> '+esc(d.subject||"");var cb=document.createElement("button");cb.className="mini";cb.textContent="Copy";cb.onclick=function(){copyText(d.subject||"");};$("coverSubject").appendChild(cb);
+    var meta="";if(d.requirements_matched&&d.requirements_matched.length)meta+='<div class="hint" style="margin-bottom:6px"><b>Requirements covered:</b> '+d.requirements_matched.map(esc).join(" - ")+'</div>';
+    if(d.gaps_not_claimed&&d.gaps_not_claimed.length)meta+='<div class="hint"><b>Not claimed (not in your resume):</b> '+d.gaps_not_claimed.map(esc).join(" - ")+'</div>';
+    $("coverMeta").innerHTML=meta;$("coverOut").style.display="block";
+  }).catch(function(e){$("coverStatus").innerHTML='<span class="err">'+esc(e.message)+'</span>';}).then(function(){busy(btn,false);});
+});
+$("coverCopy").addEventListener("click",function(){copyText($("coverLetter").innerText);});
+$("coverTxt").addEventListener("click",function(){download("cover-letter-"+slug(last&&last.company)+".txt",new Blob([$("coverLetter").innerText],{type:"text/plain"}));});
+$("coverPdf").addEventListener("click",function(){try{letterPdf(coverData&&coverData.subject,$("coverLetter").innerText,"").save("cover-letter-"+slug(last&&last.company||last&&last.title)+".pdf");}catch(e){toast(e.message);}});
+
+// Interview prep
+var interviewData=null,interviewFilter="All";
+function renderInterview(){
+  var d=interviewData,list=$("interviewList");list.innerHTML="";
+  d.questions.forEach(function(q){
+    if(interviewFilter!=="All"&&q.category!==interviewFilter)return;
+    var el=document.createElement("div");el.className="qa";
+    el.innerHTML='<span class="cat">'+esc(q.category||"")+'</span><div class="q">'+esc(q.question)+'</div><div class="why">Why they ask: '+esc(q.why_asked||"")+'</div><details><summary>Show answer outline</summary><div class="ans">'+esc(q.answer_outline||"")+'</div><div class="ev">From your resume: '+esc(q.resume_evidence||"")+'</div></details>';
+    list.appendChild(el);
+  });
+}
+$("interviewGo").addEventListener("click",function(){
+  if(!last)return;var btn=this;busy(btn,true,"Preparing...");$("interviewStatus").textContent="Building your question bank. About 20-30 seconds.";
+  post("/api/interview",{resume:last.resume,job:last.job}).then(function(d){
+    interviewData=d;interviewFilter="All";$("interviewStatus").textContent="";
+    $("interviewSummary").textContent=d.role_summary||"";
+    var cats=["All"];d.questions.forEach(function(q){if(q.category&&cats.indexOf(q.category)<0)cats.push(q.category);});
+    var f=$("interviewFilters");f.innerHTML="";cats.forEach(function(c){var p=document.createElement("button");p.className="pill"+(c==="All"?" active":"");p.textContent=c;p.onclick=function(){interviewFilter=c;var ps=f.querySelectorAll(".pill");for(var i=0;i<ps.length;i++)ps[i].classList.toggle("active",ps[i]===p);renderInterview();};f.appendChild(p);});
+    renderInterview();
+    var w=$("interviewWeak");w.innerHTML="";(d.weak_spots||[]).forEach(function(x){var li=document.createElement("li");li.innerHTML="<b>"+esc(x.topic)+"</b> - "+esc(x.how_to_handle);w.appendChild(li);});
+    var a=$("interviewAsk");a.innerHTML="";(d.questions_to_ask||[]).forEach(function(x){var li=document.createElement("li");li.textContent=x;a.appendChild(li);});
+    $("interviewOut").style.display="block";
+  }).catch(function(e){$("interviewStatus").innerHTML='<span class="err">'+esc(e.message)+'</span>';}).then(function(){busy(btn,false);});
+});
+$("interviewDownload").addEventListener("click",function(){
+  if(!interviewData)return;var d=interviewData,out=["INTERVIEW PREP - "+(last.title||"")+(last.company?" at "+last.company:""),"",d.role_summary||"",""];
+  d.questions.forEach(function(q,i){out.push((i+1)+". ["+q.category+"] "+q.question);out.push("   Why: "+(q.why_asked||""));out.push("   Outline: "+(q.answer_outline||""));out.push("   Evidence: "+(q.resume_evidence||""));out.push("");});
+  out.push("WEAK SPOTS");(d.weak_spots||[]).forEach(function(x){out.push("- "+x.topic+": "+x.how_to_handle);});out.push("");out.push("QUESTIONS TO ASK");(d.questions_to_ask||[]).forEach(function(x){out.push("- "+x);});
+  try{letterPdf("",out.join("\n"),"").save("interview-prep-"+slug(last.company||last.title)+".pdf");}catch(e){toast(e.message);}
+});
+
+// Salary
+function lpa(v){return (v/100000).toFixed(v>=1e6?1:1).replace(/\.0$/,"")+" LPA";}
+$("salaryGo").addEventListener("click",function(){
+  if(!last)return;var btn=this;busy(btn,true,"Checking...");$("salaryStatus").textContent="Reading the JD and checking live Indian job listings with posted pay...";
+  post("/api/salary",{job:last.job,resume:last.resume}).then(function(d){
+    $("salaryStatus").textContent="";var h="";
+    h+='<div class="hint" style="margin-bottom:10px">'+esc(d.job_title)+(d.company?" at "+esc(d.company):"")+(d.location?" - "+esc(d.location):"")+(d.seniority?" - "+esc(d.seniority)+" level":"")+(d.experience_years?" ("+esc(d.experience_years)+" yrs)":"")+'</div>';
+    var cards=[];
+    if(d.disclosed)cards.push('<div class="stat"><div class="k">Posted in this JD</div><div class="v">'+(d.disclosed.range?esc(lpa(d.disclosed.range[0]))+(d.disclosed.range[1]>d.disclosed.range[0]?" - "+esc(lpa(d.disclosed.range[1])):""):esc(d.disclosed.text))+'</div><div class="k">'+esc(d.disclosed.text)+'</div></div>');
+    if(d.market)cards.push('<div class="stat"><div class="k">Live listings median</div><div class="v">'+esc(lpa(d.market.median))+'</div><div class="k">'+d.market.count+' similar Indian listings with posted pay</div></div>');
+    if(d.ai_estimate)cards.push('<div class="stat"><div class="k">Estimated range</div><div class="v">'+d.ai_estimate.low_lpa+' - '+d.ai_estimate.high_lpa+' LPA</div><div class="k">AI estimate, fixed CTC</div></div>');
+    h+='<div class="stat-row">'+cards.join("")+'</div>';
+    if(d.market){var lo=Math.min(d.market.p25,(d.ai_estimate?d.ai_estimate.low_lpa*1e5:d.market.p25))*0.8,hi=Math.max(d.market.p75,(d.ai_estimate?d.ai_estimate.high_lpa*1e5:d.market.p75))*1.15;function pos(v){return Math.max(0,Math.min(100,(v-lo)/(hi-lo)*100));}
+      h+='<div class="hint">Market spread from live listings (25th - 75th percentile)</div><div class="sal-bar"><div class="rng" style="left:'+pos(d.market.p25)+'%;width:'+(pos(d.market.p75)-pos(d.market.p25))+'%"></div><span class="lab" style="left:'+pos(d.market.p25)+'%">'+esc(lpa(d.market.p25))+'</span><span class="lab" style="left:'+pos(d.market.p75)+'%">'+esc(lpa(d.market.p75))+'</span><span class="lab b" style="left:'+pos(d.market.median)+'%">median '+esc(lpa(d.market.median))+'</span></div>';}
+    if(d.ai_estimate&&d.ai_estimate.basis)h+='<p class="hint" style="margin-bottom:10px"><b>Estimate basis:</b> '+esc(d.ai_estimate.basis)+'</p>';
+    if(d.market_samples&&d.market_samples.length){h+='<div class="hint" style="margin:10px 0 6px"><b>Listings used</b></div>';d.market_samples.forEach(function(s){h+='<div class="person"><div><div style="font-weight:600;font-size:13px">'+esc(s.title)+'</div><div class="hint">'+esc(s.company)+(s.location?" - "+esc(s.location):"")+'</div></div><div style="font-size:13px">'+esc(s.salary_text)+(s.url?' <a class="btn" style="margin-left:6px;padding:4px 8px;font-size:11px" target="_blank" rel="noopener" href="'+esc(s.url)+'">View</a>':'')+'</div></div>';});}
+    if(!d.market)h+='<p class="note">Not enough live listings with posted pay for this exact role right now, so the range above is an AI estimate. Cross-check before negotiating.</p>';
+    if(d.negotiation_tips&&d.negotiation_tips.length){h+='<h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:16px 0 10px">Negotiation tips</h2><ul class="clean tips">'+d.negotiation_tips.map(function(t){return "<li>"+esc(t)+"</li>";}).join("")+'</ul>';}
+    var gq=encodeURIComponent((d.job_title||d.search_title)+(d.company?" "+d.company:"")+" salary India ambitionbox glassdoor");
+    h+='<div class="row"><a class="btn" target="_blank" rel="noopener" href="https://www.google.com/search?q='+gq+'">Cross-check on AmbitionBox / Glassdoor</a></div>';
+    h+='<p class="hint" style="margin-top:10px">Salary figures are guidance, not an offer. Listing data comes from live job posts that show pay; the estimate is AI-generated.</p>';
+    $("salaryOut").innerHTML=h;$("salaryOut").style.display="block";
+  }).catch(function(e){$("salaryStatus").innerHTML='<span class="err">'+esc(e.message)+'</span>';}).then(function(){busy(btn,false);});
+});
+
+// Referral finder
+var CONN_KEY="rf_connections";
+function parseCsv(text){
+  var rows=[],row=[],f="",q=false;
+  for(var i=0;i<text.length;i++){var c=text[i];
+    if(q){if(c==='"'){if(text[i+1]==='"'){f+='"';i++;}else q=false;}else f+=c;}
+    else if(c==='"')q=true;else if(c===","){row.push(f);f="";}else if(c==="\n"||c==="\r"){if(c==="\r"&&text[i+1]==="\n")i++;row.push(f);rows.push(row);row=[];f="";}else f+=c;}
+  if(f||row.length){row.push(f);rows.push(row);}
+  return rows;
+}
+function importConnections(text){
+  var rows=parseCsv(text),hi=-1;
+  for(var i=0;i<Math.min(rows.length,20);i++){var r=rows[i].map(function(x){return x.trim().toLowerCase();});if(r.indexOf("first name")>=0&&r.indexOf("company")>=0){hi=i;break;}}
+  if(hi<0)throw new Error("This does not look like LinkedIn's Connections.csv (no First Name / Company columns).");
+  var H=rows[hi].map(function(x){return x.trim().toLowerCase();}),ix=function(n){return H.indexOf(n);};
+  var out=[];for(var j=hi+1;j<rows.length;j++){var r2=rows[j];if(!r2||r2.length<3)continue;
+    var p={first:r2[ix("first name")]||"",last:r2[ix("last name")]||"",url:r2[ix("url")]||"",company:r2[ix("company")]||"",position:r2[ix("position")]||""};if(p.first||p.last)out.push(p);}
+  return out;
+}
+function normCo(s){return String(s||"").toLowerCase().replace(/\b(private|pvt|limited|ltd|inc|llc|llp|technologies|technology|tech|solutions|labs|india|software|services|corp|corporation|co)\b\.?/g,"").replace(/[^a-z0-9]/g,"");}
+function renderReferral(){
+  var box=$("referralOut"),conns=load(CONN_KEY,[]),co=(last&&last.company)||"";
+  var h='<div class="row" style="margin-top:0;flex-wrap:nowrap"><input type="text" id="refCompany" placeholder="Company name" value="'+esc(co)+'"><button class="mini" id="refSearch">Find people</button></div>';
+  h+='<div id="refResults" style="margin-top:14px"></div>';
+  h+='<div class="card" style="margin-top:14px;background:var(--card2)"><h2>Your LinkedIn connections</h2>';
+  h+=conns.length?'<p class="hint">'+conns.length+' connections imported on this device. <button class="mini" id="refClear" style="margin-left:6px">Remove</button></p>':'<p class="hint" style="margin-bottom:8px">Import your connections once to see who you already know at each company. LinkedIn lets you download them free: Settings &rarr; Data privacy &rarr; Get a copy of your data &rarr; Connections. You get an email with Connections.csv in about 10 minutes.</p>';
+  h+='<div class="row"><label class="filebtn">'+(conns.length?"Re-import":"Import")+' Connections.csv<input type="file" id="refCsv" accept=".csv" style="display:none"></label><span class="hint" id="refCsvHint">Stays in your browser. Never uploaded.</span></div></div>';
+  box.innerHTML=h;
+  $("refSearch").onclick=function(){findReferrals($("refCompany").value.trim());};
+  $("refCsv").onchange=function(){var f=this.files&&this.files[0];if(!f)return;f.text().then(function(t){var list=importConnections(t);save(CONN_KEY,list);toast(list.length+" connections imported");renderReferral();}).catch(function(e){$("refCsvHint").innerHTML='<span class="err">'+esc(e.message)+'</span>';});};
+  if($("refClear"))$("refClear").onclick=function(){localStorage.removeItem(CONN_KEY);renderReferral();};
+  if(co)findReferrals(co);
+}
+function findReferrals(co){
+  var out=$("refResults");if(!co){out.innerHTML='<span class="hint">Type the company name.</span>';return;}
+  var conns=load(CONN_KEY,[]),key=normCo(co);
+  var matches=key.length>=2?conns.filter(function(p){var k=normCo(p.company);return k&&(k===key||(key.length>=4&&(k.indexOf(key)===0||key.indexOf(k)===0)));}):[];
+  var li="https://www.linkedin.com/search/results/people/?keywords=";
+  var h="";
+  h+='<h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:10px">1st-degree: you already know them</h2>';
+  if(!conns.length)h+='<p class="hint" style="margin-bottom:10px">Import your connections below to see direct contacts here.</p>';
+  else if(!matches.length)h+='<p class="hint" style="margin-bottom:10px">None of your imported connections list '+esc(co)+' as their company.</p>';
+  matches.slice(0,25).forEach(function(p,i){h+='<div class="person"><div><div style="font-weight:600">'+esc(p.first+" "+p.last)+'</div><div class="hint">'+esc(p.position)+' - '+esc(p.company)+'</div></div><div class="row" style="margin-top:0">'+(p.url?'<a class="btn" target="_blank" rel="noopener" href="'+esc(p.url)+'">Profile</a>':'')+'<button class="btn primary" data-ref-msg="'+i+'">Write referral ask</button></div></div>';});
+  h+='<h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:16px 0 10px">2nd-degree: friends of friends at '+esc(co)+'</h2>';
+  h+='<p class="hint" style="margin-bottom:10px">LinkedIn does not share 2nd-degree lists with outside apps, so these open LinkedIn\'s own search already filtered for you.</p>';
+  h+='<div class="row" style="margin-top:0">';
+  h+='<a class="btn primary" target="_blank" rel="noopener" href="'+li+encodeURIComponent(co)+'&network=%5B%22S%22%5D&origin=FACETED_SEARCH">2nd-degree at '+esc(co)+'</a>';
+  h+='<a class="btn" target="_blank" rel="noopener" href="'+li+encodeURIComponent(co+" recruiter")+'&origin=GLOBAL_SEARCH_HEADER">Recruiters at '+esc(co)+'</a>';
+  if(last&&last.title)h+='<a class="btn" target="_blank" rel="noopener" href="'+li+encodeURIComponent(co+" "+last.title.split(/[-(,|]/)[0].trim())+'&origin=GLOBAL_SEARCH_HEADER">Team for this role</a>';
+  h+='</div>';
+  h+='<div style="margin-top:14px"><button class="btn" id="refGeneric">Write a referral ask for a 2nd-degree connection</button></div>';
+  h+='<div id="refMsg" style="margin-top:12px"></div>';
+  out.innerHTML=h;
+  var btns=out.querySelectorAll("[data-ref-msg]");for(var i=0;i<btns.length;i++)btns[i].onclick=function(){var p=matches[parseInt(this.getAttribute("data-ref-msg"),10)];writeRefMsg(p.first+" "+p.last+", "+p.position+" at "+p.company,"first",this);};
+  $("refGeneric").onclick=function(){writeRefMsg("someone at "+co,"second",this);};
+}
+function writeRefMsg(person,rel,btn){
+  if(!last)return;busy(btn,true,"Writing...");
+  post("/api/referral-message",{resume:last.resume,job:last.job,person:person,relation:rel}).then(function(d){
+    var m=$("refMsg");m.innerHTML="";
+    [["Connection note (under 300 chars)",d.connection_note],["Message",d.message],["Follow-up after 4-5 days",d.follow_up]].forEach(function(x){if(!x[1])return;var lab=document.createElement("div");lab.className="hint";lab.style.margin="6px 0";lab.textContent=x[0]+" - "+x[1].length+" chars";var b=document.createElement("div");b.className="copybox pad";b.textContent=x[1];var c=document.createElement("button");c.className="mini";c.textContent="Copy";c.onclick=function(){copyText(x[1]);};b.appendChild(c);m.appendChild(lab);m.appendChild(b);});
+  }).catch(function(e){toast(e.message);}).then(function(){busy(btn,false);});
+}
+
+/* ---------- Tracker ---------- */
+var APP_KEY="rf_apps",STATUSES=["Saved","Applied","Interviewing","Offer","Rejected"];
+function apps(){return load(APP_KEY,[]);}
+function addApp(a){var list=apps();var k=slug(a.company+" "+a.title);for(var i=0;i<list.length;i++)if(slug(list[i].company+" "+list[i].title)===k){toast("Already in your tracker");return false;}
+  list.unshift({id:uid(),company:a.company||"",title:a.title||"",url:a.url||"",status:a.status||"Saved",score:a.score==null?null:a.score,added:Date.now(),updated:Date.now(),notes:""});save(APP_KEY,list);updateCounts();toast("Added to tracker");return true;}
+function addFromLast(){if(!last)return;addApp({company:last.company,title:last.title,url:last.url,status:"Saved",score:clampScore(last.data.score)});}
+$("tAddBtn").addEventListener("click",function(){var c=$("tAddCompany").value.trim(),t=$("tAddTitle").value.trim();if(!c&&!t){toast("Add a company or role");return;}if(addApp({company:c,title:t,url:$("tAddUrl").value.trim(),status:$("tAddStatus").value})){$("tAddCompany").value="";$("tAddTitle").value="";$("tAddUrl").value="";renderTracker();}});
+function renderTracker(){
+  var list=apps(),board=$("trackerBoard");board.innerHTML="";
+  var c={};STATUSES.forEach(function(s){c[s]=0;});list.forEach(function(a){c[a.status]=(c[a.status]||0)+1;});
+  var applied=list.filter(function(a){return a.status!=="Saved";}).length,resp=list.filter(function(a){return a.status==="Interviewing"||a.status==="Offer";}).length;
+  $("trackerStats").innerHTML='<div class="stat"><div class="v">'+list.length+'</div><div class="k">Tracked jobs</div></div><div class="stat"><div class="v">'+applied+'</div><div class="k">Applied</div></div><div class="stat"><div class="v">'+c.Interviewing+'</div><div class="k">Interviewing</div></div><div class="stat"><div class="v">'+(applied?Math.round(resp/applied*100):0)+'%</div><div class="k">Response rate</div></div>';
+  STATUSES.forEach(function(s){
+    var col=document.createElement("div");col.className="col";col.innerHTML="<h3><span>"+s+"</span><span>"+c[s]+"</span></h3>";
+    list.filter(function(a){return a.status===s;}).forEach(function(a){
+      var el=document.createElement("div");el.className="app";
+      el.innerHTML='<div class="t">'+esc(a.title||"Role")+'</div><div class="c">'+esc(a.company||"")+(a.score!=null?' - match <span class="scorepill '+scoreCls(a.score)+'" style="padding:0 6px;font-size:11px">'+a.score+'</span>':'')+'</div><div class="c">Updated '+esc(fmtDate(a.updated))+'</div>';
+      var sel=document.createElement("select");STATUSES.forEach(function(x){var o=document.createElement("option");o.textContent=x;if(x===a.status)o.selected=true;sel.appendChild(o);});
+      sel.onchange=function(){var l=apps();l.forEach(function(y){if(y.id===a.id){y.status=sel.value;y.updated=Date.now();}});save(APP_KEY,l);renderTracker();};
+      el.appendChild(sel);
+      var acts=document.createElement("div");acts.className="acts";
+      if(a.url){var lk=document.createElement("a");lk.className="btn";lk.href=a.url;lk.target="_blank";lk.rel="noopener";lk.textContent="Open job";acts.appendChild(lk);}
+      var nb=document.createElement("button");nb.className="btn";nb.textContent=a.notes?"Notes *":"Notes";nb.onclick=function(){var v=prompt("Notes for "+(a.company||a.title),a.notes||"");if(v!==null){var l=apps();l.forEach(function(y){if(y.id===a.id){y.notes=v;y.updated=Date.now();}});save(APP_KEY,l);renderTracker();}};acts.appendChild(nb);
+      var db=document.createElement("button");db.className="btn";db.textContent="Remove";db.onclick=function(){if(confirm("Remove this application?")){save(APP_KEY,apps().filter(function(y){return y.id!==a.id;}));updateCounts();renderTracker();}};acts.appendChild(db);
+      el.appendChild(acts);col.appendChild(el);
+    });
+    board.appendChild(col);
+  });
+  updateCounts();
+}
+$("tExport").addEventListener("click",function(){var rows=[["Company","Role","Status","Match","Link","Added","Updated","Notes"]];apps().forEach(function(a){rows.push([a.company,a.title,a.status,a.score==null?"":a.score,a.url,new Date(a.added).toISOString().slice(0,10),new Date(a.updated).toISOString().slice(0,10),a.notes||""]);});
+  var csv=rows.map(function(r){return r.map(function(v){v=String(v==null?"":v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}).join(",");}).join("\n");download("resumefit-applications.csv",new Blob([csv],{type:"text/csv"}));});
+
+/* ---------- History ---------- */
+function renderHistory(){
+  var hist=load(HIST_KEY,[]);
+  if(!hist.length){$("historyStats").innerHTML="";$("historyChart").innerHTML='<div class="empty">Run your first analysis and it will show up here.</div>';$("historyTable").innerHTML="";return;}
+  var scores=hist.map(function(h){return h.score;}),avg=Math.round(scores.reduce(function(a,b){return a+b;},0)/scores.length),best=Math.max.apply(null,scores);
+  var ups=hist.filter(function(h){return h.delta!=null&&h.delta>0;});
+  $("historyStats").innerHTML='<div class="stat"><div class="v">'+hist.length+'</div><div class="k">Analyses</div></div><div class="stat"><div class="v">'+avg+'</div><div class="k">Average match</div></div><div class="stat"><div class="v">'+best+'</div><div class="k">Best match</div></div><div class="stat"><div class="v">'+(ups.length?"+"+Math.max.apply(null,ups.map(function(h){return h.delta;})):"-")+'</div><div class="k">Biggest improvement on a re-run</div></div>';
+  var pts=hist.slice(0,30).reverse(),W=900,H=220,P=32;
+  var x=function(i){return pts.length<2?W/2:P+i*(W-2*P)/(pts.length-1);},y=function(s){return H-P-(s/100)*(H-2*P);};
+  var svg='<svg class="chart" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none">';
+  [0,25,50,75,100].forEach(function(g){svg+='<line x1="'+P+'" x2="'+(W-P)+'" y1="'+y(g)+'" y2="'+y(g)+'" stroke="#2e3345" stroke-width="1"/><text x="4" y="'+(y(g)+4)+'" fill="#9aa0b4" font-size="11">'+g+'</text>';});
+  var path=pts.map(function(p,i){return (i?"L":"M")+x(i).toFixed(1)+","+y(p.score).toFixed(1);}).join(" ");
+  svg+='<path d="'+path+'" fill="none" stroke="#6c8cff" stroke-width="2.5"/>';
+  pts.forEach(function(p,i){svg+='<circle cx="'+x(i)+'" cy="'+y(p.score)+'" r="4.5" fill="'+(p.score>=70?"#63d68a":p.score>=45?"#ffc466":"#ff7b72")+'"><title>'+esc(p.title)+(p.company?" - "+esc(p.company):"")+": "+p.score+'</title></circle>';});
+  svg+='</svg>';$("historyChart").innerHTML=svg+'<p class="hint">Last '+pts.length+' analyses, oldest to newest. Hover a point for the job.</p>';
+  var t='<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>When</th><th>Job</th><th>Resume</th><th>Match</th><th>Change</th><th></th></tr></thead><tbody>';
+  hist.forEach(function(h,i){t+='<tr><td>'+esc(fmtDate(h.at))+'</td><td><b>'+esc(h.title)+'</b><div class="hint">'+esc(h.company||"")+'</div></td><td>'+esc(h.resumeLabel||"")+'</td><td><span class="scorepill '+scoreCls(h.score)+'">'+h.score+'</span></td><td>'+(h.delta==null?'<span class="hint">first run</span>':'<span class="'+(h.delta>=0?"delta-up":"delta-down")+'">'+(h.delta>=0?"+":"")+h.delta+'</span>')+'</td><td>'+(h.full?'<button class="mini" data-open="'+i+'">Open</button>':'')+'</td></tr>';});
+  t+='</tbody></table></div>';$("historyTable").innerHTML=t;
+  var ob=$("historyTable").querySelectorAll("[data-open]");for(var k=0;k<ob.length;k++)ob[k].onclick=function(){var h=hist[parseInt(this.getAttribute("data-open"),10)];$("resumeInput").value=h.full.resume;$("jdInput").value=h.full.job;$("toJobBtn").disabled=false;showView("analyze");window.rfShowResults(h.full.data,true);};
+}
+$("historyClear").addEventListener("click",function(){if(confirm("Clear all score history on this device?")){localStorage.removeItem(HIST_KEY);renderHistory();}});
+
+/* ---------- Bulk compare ---------- */
+var slotCount=0;
+function addSlot(text){if(slotCount>=5){toast("Up to 5 jobs at once");return;}slotCount++;var i=slotCount;var el=document.createElement("div");el.className="jd-slot";
+  el.innerHTML='<div class="row" style="margin-top:0;margin-bottom:8px;flex-wrap:nowrap"><b style="white-space:nowrap;font-size:13px">Job '+i+'</b><input type="url" placeholder="LinkedIn / Naukri link (optional)" class="cmp-url"><button class="mini cmp-pull">Pull</button></div><textarea class="cmp-jd" placeholder="...or paste the job description"></textarea>';
+  if(text)el.querySelector("textarea").value=text;
+  el.querySelector(".cmp-pull").onclick=function(){var b=this,u=el.querySelector(".cmp-url").value.trim();if(!u)return;busy(b,true,"...");post("/api/fetch-jd",{url:u}).then(function(d){el.querySelector("textarea").value=d.job;}).catch(function(e){toast(e.message+" Paste it instead.");}).then(function(){busy(b,false);});};
+  $("cmpSlots").appendChild(el);if(slotCount>=5)$("cmpAdd").style.display="none";}
+addSlot();addSlot();addSlot();
+$("cmpAdd").addEventListener("click",function(){addSlot();});
+$("cmpGo").addEventListener("click",function(){
+  var resume=resumeFromSelect($("cmpResume"));if(!resume){$("cmpStatus").innerHTML='<span class="err">Pick or upload a resume first.</span>';return;}
+  var slots=document.querySelectorAll(".jd-slot"),jobs=[];for(var i=0;i<slots.length;i++){var t=slots[i].querySelector("textarea").value.trim();if(t.length>40)jobs.push({text:t,url:slots[i].querySelector(".cmp-url").value.trim(),idx:i+1});}
+  if(jobs.length<2){$("cmpStatus").innerHTML='<span class="err">Add at least 2 job descriptions.</span>';return;}
+  var btn=this;busy(btn,true,"Comparing "+jobs.length+" jobs...");$("cmpResults").innerHTML="";var done=0;$("cmpStatus").textContent="Scoring 0 of "+jobs.length+"...";
+  var results=[];var queue=jobs.slice();
+  function worker(){var j=queue.shift();if(!j)return Promise.resolve();return post("/api/quick-score",{resume:resume,job:j.text}).then(function(d){d.job=j;results.push(d);},function(e){results.push({job:j,error:e.message});}).then(function(){done++;$("cmpStatus").textContent="Scoring "+done+" of "+jobs.length+"...";renderCompare(results,resume);return worker();});}
+  Promise.all([worker(),worker()]).then(function(){$("cmpStatus").textContent="Done. Ranked by match.";busy(btn,false);});
+});
+function renderCompare(results,resume){
+  var box=$("cmpResults");box.innerHTML="";
+  var ok=results.filter(function(r){return !r.error;}).sort(function(a,b){return clampScore(b.score)-clampScore(a.score);});
+  ok.forEach(function(r,rank){var s=clampScore(r.score);var el=document.createElement("div");el.className="cmp-card";
+    el.innerHTML='<div class="ring" style="border:4px solid '+scoreCol(s)+';color:'+scoreCol(s)+'">'+s+'</div><div><div class="rank">#'+(rank+1)+' - '+esc(r.apply_advice||"")+'</div><div style="font-weight:700">'+esc(r.job_title||("Job "+r.job.idx))+'</div><div class="hint">'+esc(r.company||"")+(r.location?" - "+esc(r.location):"")+'</div><div style="font-size:13px;margin-top:6px">'+esc(r.verdict||"")+'</div><div class="hint" style="margin-top:6px"><span style="color:var(--green)">Strong:</span> '+(r.strengths||[]).map(esc).join(", ")+'</div><div class="hint"><span style="color:var(--red)">Missing:</span> '+(r.missing||[]).map(esc).join(", ")+'</div><div class="hint" style="margin-top:4px">Skills '+clampScore(r.subscores&&r.subscores.skills)+' - Experience '+clampScore(r.subscores&&r.subscores.experience)+' - Keywords '+clampScore(r.subscores&&r.subscores.keywords)+'</div></div><div class="cmp-acts" style="display:flex;flex-direction:column;gap:6px"></div>';
+    var acts=el.querySelector(".cmp-acts");
+    var deep=document.createElement("button");deep.className="btn primary";deep.textContent="Full analysis";deep.onclick=function(){$("resumeInput").value=resume;$("toJobBtn").disabled=false;$("jdInput").value=r.job.text;$("jdUrl").value=r.job.url||"";showView("analyze");window.rfGoStep(2);toast("Loaded - press Analyze");};
+    var tr=document.createElement("button");tr.className="btn";tr.textContent="Add to tracker";tr.onclick=function(){addApp({company:r.company,title:r.job_title,url:r.job.url,status:"Saved",score:s});};
+    acts.appendChild(deep);acts.appendChild(tr);box.appendChild(el);});
+  results.filter(function(r){return r.error;}).forEach(function(r){var el=document.createElement("div");el.className="note";el.textContent="Job "+r.job.idx+": "+r.error;box.appendChild(el);});
+}
+
+/* ---------- LinkedIn optimizer ---------- */
+function copyBlock(label,text){return '<div class="hint" style="margin:10px 0 6px">'+esc(label)+'</div><div class="copybox pad" data-copy="1">'+esc(text)+'</div>';}
+$("liGo").addEventListener("click",function(){
+  var resume=resumeFromSelect($("liResume"));if(!resume){$("liStatus").innerHTML='<span class="err">Pick or upload a resume first.</span>';return;}
+  var btn=this;busy(btn,true,"Optimizing...");$("liStatus").textContent="Building your profile. About 20 seconds.";$("liOut").innerHTML="";
+  post("/api/linkedin",{resume:resume,profile:$("liProfile").value,target:$("liTarget").value}).then(function(d){
+    $("liStatus").textContent="";var s=clampScore(d.profile_score);var h="";
+    h+='<div class="score-dashboard"><div class="overall-card"><div style="font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:1px">Recruiter search fit</div><div class="ring" style="border:5px solid '+scoreCol(s)+';color:'+scoreCol(s)+'">'+s+'</div><div class="hint">'+($("liProfile").value.trim()?"Your current profile":"Based on your resume")+'</div></div><div class="subscore-card"><h2>Quick wins</h2><ul class="clean tips">'+(d.quick_wins||[]).map(function(x){return "<li>"+esc(x)+"</li>";}).join("")+'</ul></div></div>';
+    h+='<div class="card" style="margin-bottom:14px"><h2>Headline options</h2>';(d.headlines||[]).forEach(function(x,i){h+=copyBlock("Option "+(i+1)+" - "+String(x).length+"/220 chars",x);});h+='</div>';
+    if(d.about)h+='<div class="card" style="margin-bottom:14px"><h2>About section</h2>'+copyBlock(String(d.about).split(/\s+/).length+" words",d.about)+'</div>';
+    h+='<div class="cols"><div class="card"><h2>Top skills to list (in this order)</h2><div class="chips">'+(d.top_skills||[]).map(function(x){return '<span class="chip">'+esc(x)+'</span>';}).join("")+'</div></div><div class="card"><h2>Keywords you are missing</h2><p class="hint" style="margin-bottom:8px">Add only if true.</p><div class="chips">'+(d.missing_keywords||[]).map(function(x){return '<span class="chip" style="color:var(--amber)">'+esc(x)+'</span>';}).join("")+'</div></div></div>';
+    if((d.experience_rewrites||[]).length){h+='<div class="card"><h2>Experience bullets</h2>';d.experience_rewrites.forEach(function(r){h+=copyBlock(r.role||"",(r.bullets||[]).map(function(b){return "- "+b;}).join("\n"));});h+='</div>';}
+    $("liOut").innerHTML=h;
+    var boxes=$("liOut").querySelectorAll("[data-copy]");for(var i=0;i<boxes.length;i++){(function(b){var t=b.textContent;var c=document.createElement("button");c.className="mini";c.textContent="Copy";c.onclick=function(){copyText(t);};b.appendChild(c);})(boxes[i]);}
+  }).catch(function(e){$("liStatus").innerHTML='<span class="err">'+esc(e.message)+'</span>';}).then(function(){busy(btn,false);});
+});
+
+/* ---------- Counts + extension handoff ---------- */
+function updateCounts(){$("trackerCount").textContent=apps().length;$("resumesCount").textContent=resumes().length;}
+function b64urlDecode(s){s=s.replace(/-/g,"+").replace(/_/g,"/");while(s.length%4)s+="=";var bin=atob(s),bytes=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);return new TextDecoder().decode(bytes);}
+function handleHash(){
+  var m=location.hash.match(/[#&]jd=([^&]+)/);if(!m)return;
+  try{var p=JSON.parse(b64urlDecode(m[1]));
+    var txt=(p.title?p.title+(p.company?" at "+p.company:"")+"\n\n":"")+(p.text||"");
+    $("jdInput").value=txt.slice(0,8000);$("jdUrl").value=p.url||"";
+    $("pullHint").textContent="Loaded from the ResumeFit extension: "+(p.title||"job")+(p.company?" ("+p.company+")":"")+". Review, then Analyze.";
+    history.replaceState(null,"",location.pathname);
+    showView("analyze");
+    if(!currentResumeText()){var list=resumes(),act=load(ACTIVE_KEY,""),pick=null;list.forEach(function(r){if(r.id===act)pick=r;});pick=pick||list[0];if(!pick){var lu=load("rf_last_upload",null);if(lu&&lu.text)pick={id:"",label:"Last uploaded resume",text:lu.text};}
+      if(pick){useResume(pick);window.rfGoStep(2);}else{$("fileHint").textContent="Job loaded. Upload your resume to continue.";}}
+    else window.rfGoStep(2);
+  }catch(e){}
+}
+window.addEventListener("hashchange",handleHash);
+
+/* ---------- Contact ---------- */
+document.getElementById("extDownload").addEventListener("click",function(){var em=(document.getElementById("extEmail").value||"").trim();if(em&&/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em)){fetch("/api/subscribe",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({email:em}),keepalive:true}).then(function(){toast("Thanks - we will email you about updates");}).catch(function(){});}});
+document.addEventListener("click",function(e){var a=e.target.closest&&e.target.closest("[data-goto]");if(!a)return;e.preventDefault();showView(a.getAttribute("data-goto"));});
+(function(){var m=location.hash.match(/^#(about|contact|privacy|terms)$/);if(m)showView(m[1]);})();
+$("ctSend").addEventListener("click",function(){
+  var name=$("ctName").value.trim(),email=$("ctEmail").value.trim(),msg=$("ctMsg").value.trim(),topic=$("ctTopic").value;
+  if(!msg){$("ctHint").innerHTML='<span class="err">Write a message first.</span>';return;}
+  if(email&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){$("ctHint").innerHTML='<span class="err">Check your email address.</span>';return;}
+  var body=msg+"\n\n- "+(name||"ResumeFit user")+(email?" ("+email+")":"");
+  location.href="mailto:ashwatthama710@gmail.com?subject="+encodeURIComponent("ResumeFit - "+topic)+"&body="+encodeURIComponent(body);
+  $("ctHint").textContent="Opening your email app...";
+});
+updateCounts();renderSavedPicker();handleHash();
+})();
+
 </script>
 </body>
 </html>

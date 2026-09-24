@@ -5,3 +5,11 @@ workers_dev = true
 
 [ai]
 binding = "AI"
+
+[[durable_objects.bindings]]
+name = "DB"
+class_name = "AnalyticsDB"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["AnalyticsDB"]
