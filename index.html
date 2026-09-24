@@ -153,6 +153,33 @@ pre.resume[contenteditable]{outline:none}pre.resume[contenteditable]:focus{borde
 .chart{width:100%;height:220px;display:block}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
 @media print{body *{visibility:hidden}#rewrittenPre,#rewrittenPre *{visibility:visible}#rewrittenPre{position:absolute;left:0;top:0;max-height:none;border:none;background:#fff;color:#000}}
+/* FitCoach chat widget */
+.fc-btn{position:fixed;right:20px;bottom:20px;z-index:60;display:flex;align-items:center;gap:8px;background:var(--grad);color:#fff;border:0;border-radius:999px;padding:12px 18px;font:600 14px Inter,system-ui,sans-serif;cursor:pointer;box-shadow:var(--glow);transition:transform .2s}
+.fc-btn:hover{transform:translateY(-2px)}
+.fc-btn .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
+.fc-panel{position:fixed;right:20px;bottom:78px;z-index:61;width:370px;max-width:calc(100vw - 24px);height:520px;max-height:calc(100vh - 110px);display:none;flex-direction:column;background:rgba(13,15,24,.97);border:1px solid var(--border);border-radius:18px;box-shadow:0 20px 60px rgba(0,0,0,.55);overflow:hidden;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.fc-panel.open{display:flex;animation:fadeUp .25s ease both}
+.fc-head{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,rgba(108,140,255,.16),rgba(168,85,247,.12))}
+.fc-av{width:34px;height:34px;border-radius:10px;background:var(--grad);display:flex;align-items:center;justify-content:center;font:700 14px Sora,Inter,sans-serif;color:#fff}
+.fc-title{font:700 15px Sora,Inter,sans-serif;color:var(--text)}.fc-sub{font-size:11.5px;color:var(--muted)}
+.fc-x{margin-left:auto;background:none;border:0;color:var(--muted);font-size:22px;cursor:pointer;line-height:1}
+.fc-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.fc-m{max-width:86%;padding:9px 12px;border-radius:14px;font-size:13.5px;line-height:1.5;white-space:pre-wrap;word-wrap:break-word}
+.fc-m.bot{background:var(--card2);border:1px solid var(--border);color:var(--text);align-self:flex-start;border-bottom-left-radius:4px}
+.fc-m.me{background:var(--grad);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.fc-m.err{color:var(--red)}
+.fc-chips{display:flex;flex-wrap:wrap;gap:6px;padding:0 14px 10px}
+.fc-chip{background:var(--card2);border:1px solid var(--border);color:var(--muted);border-radius:999px;padding:5px 10px;font-size:12px;cursor:pointer}
+.fc-chip:hover{color:var(--text);border-color:var(--accent)}
+.fc-in{display:flex;align-items:stretch;gap:8px;padding:12px;border-top:1px solid var(--border);flex:0 0 auto}.fc-in button{height:42px}
+.fc-in textarea{flex:1;resize:none;height:42px!important;min-height:42px!important;max-height:42px;margin:0;width:auto;background:var(--card);border:1px solid var(--border);border-radius:12px;color:var(--text);padding:9px 11px;font:13.5px Inter,system-ui,sans-serif}
+.fc-in textarea:focus{outline:none;border-color:var(--accent)}
+.fc-in button{background:var(--grad);border:0;color:#fff;border-radius:12px;padding:0 14px;font-weight:600;cursor:pointer}
+.fc-in button:disabled{opacity:.5;cursor:default}
+.fc-ctx{font-size:11px;color:var(--cyan);padding:6px 14px 0}
+@media(max-width:520px){.fc-panel{right:12px;bottom:72px;height:calc(100vh - 100px)}.fc-btn{right:12px;bottom:12px}}
+.study li{margin-bottom:8px}
+.qa .model{margin-top:8px;padding:10px 12px;border-left:3px solid var(--accent);background:rgba(124,140,255,.07);border-radius:8px;font-size:13.5px;line-height:1.55}
 </style>
 </head>
 <body>
@@ -241,7 +268,7 @@ pre.resume[contenteditable]{outline:none}pre.resume[contenteditable]:focus{borde
 <div class="tools-grid">
 <button class="tool-btn" data-tool="pdf"><b>Tailored resume PDF</b><span>Clean, ATS-safe, ready to apply</span></button>
 <button class="tool-btn" data-tool="cover"><b>Cover letter</b><span>Written from your resume + this JD</span></button>
-<button class="tool-btn" data-tool="interview"><b>Interview prep</b><span>Likely questions + answer outlines</span></button>
+<button class="tool-btn" data-tool="interview"><b>Interview Predictor</b><span>Likely questions, model answers, what to study</span></button>
 <button class="tool-btn" data-tool="salary"><b>Salary insights</b><span>Expected CTC range for this role</span></button>
 <button class="tool-btn" data-tool="referral"><b>Referral finder</b><span>People who can refer you</span></button>
 <button class="tool-btn" data-tool="track"><b>Add to tracker</b><span>Log it and track status</span></button>
@@ -258,7 +285,7 @@ pre.resume[contenteditable]{outline:none}pre.resume[contenteditable]:focus{borde
 </div>
 </div>
 <div class="tool-panel" id="tool-interview">
-<div class="row"><button class="btn primary" id="interviewGo">Generate interview prep</button></div>
+<div class="row"><button class="btn primary" id="interviewGo">Predict my interview</button></div>
 <div class="hint" id="interviewStatus" style="margin-top:10px"></div>
 <div id="interviewOut" style="display:none;margin-top:12px">
 <p id="interviewSummary" style="margin-bottom:12px"></p>
@@ -266,6 +293,8 @@ pre.resume[contenteditable]{outline:none}pre.resume[contenteditable]:focus{borde
 <div id="interviewList"></div>
 <h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 10px">Weak spots they will probe</h2>
 <ul class="clean cuts" id="interviewWeak"></ul>
+<h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 10px">Your gaps - what to study before the interview</h2>
+<ul class="clean study" id="interviewStudy"></ul>
 <h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 10px">Smart questions to ask them</h2>
 <ul class="clean tips" id="interviewAsk"></ul>
 <div class="row"><button class="btn" id="interviewDownload">Download prep sheet (PDF)</button></div>
@@ -430,6 +459,15 @@ pre.resume[contenteditable]{outline:none}pre.resume[contenteditable]:focus{borde
 </div>
 </div>
 <div class="toast" id="toast"></div>
+<button class="fc-btn" id="fcBtn" aria-label="Open FitCoach chat"><span class="dot"></span>Ask FitCoach</button>
+<div class="fc-panel" id="fcPanel" role="dialog" aria-label="FitCoach chat">
+<div class="fc-head"><div class="fc-av">FC</div><div><div class="fc-title">FitCoach</div><div class="fc-sub">Your AI resume &amp; career coach</div></div><button class="fc-x" id="fcClose" aria-label="Close chat">&times;</button></div>
+<div class="fc-ctx" id="fcCtx"></div>
+<div class="fc-msgs" id="fcMsgs"></div>
+<div class="fc-chips" id="fcChips"></div>
+<div class="fc-in"><textarea id="fcInput" maxlength="600" placeholder="Ask about your resume, score, interviews..."></textarea><button id="fcSend">Send</button></div>
+</div>
+
 
 <footer><div style="margin-bottom:8px"><a href="#about" data-goto="about" style="color:var(--accent);text-decoration:none;margin:0 8px">About us</a><a href="#contact" data-goto="contact" style="color:var(--accent);text-decoration:none;margin:0 8px">Contact us</a><a href="#privacy" data-goto="privacy" style="color:var(--accent);text-decoration:none;margin:0 8px">Privacy Policy</a><a href="#terms" data-goto="terms" style="color:var(--accent);text-decoration:none;margin:0 8px">Terms &amp; Conditions</a></div>Free, no signup. Your resume text is sent to the AI model for analysis and is not stored unless you choose to share it. Saved resumes, history, tracker and connections stay in your browser on this device.</footer>
 </div>
@@ -772,6 +810,7 @@ function guessTitle(job){var first=String(job||"").split("\n").map(function(s){r
 window.rfOnResults=function(d,resume,job,fromHistory){
   last={data:d,resume:resume,job:job,title:d.job_title||guessTitle(job),company:d.company||"",url:($("jdUrl").value||"").trim()};
   resetTools();
+  if(window.rfFitCoachRefresh)try{window.rfFitCoachRefresh();}catch(e){}
   if(fromHistory)return;
   var hist=load(HIST_KEY,[]);
   var rid=activeResumeId();
@@ -927,6 +966,30 @@ $("coverCopy").addEventListener("click",function(){copyText($("coverLetter").inn
 $("coverTxt").addEventListener("click",function(){download("cover-letter-"+slug(last&&last.company)+".txt",new Blob([$("coverLetter").innerText],{type:"text/plain"}));});
 $("coverPdf").addEventListener("click",function(){try{letterPdf(coverData&&coverData.subject,$("coverLetter").innerText,"").save("cover-letter-"+slug(last&&last.company||last&&last.title)+".pdf");}catch(e){toast(e.message);}});
 
+/* ---------- FitCoach chat ---------- */
+(function(){
+  var hist=[],busyChat=false;
+  function el(id){return document.getElementById(id);}
+  function ctx(){if(!last||!last.data)return null;var d=last.data;var miss=(d.keyword_coverage||[]).filter(function(k){return k&&k.covered===false&&k.keyword;}).map(function(k){return k.keyword;}).slice(0,15);
+    return {score:d.score,subscores:d.subscores||{},missing:miss,verdict:d.verdict||"",job_title:last.title||"",company:last.company||"",resume:(el("rewrittenPre")&&el("rewrittenPre").textContent.trim())?String(last.resume||"").slice(0,3500):String(last.resume||"").slice(0,3500)};}
+  function add(role,text,cls){var m=document.createElement("div");m.className="fc-m "+(role==="user"?"me":"bot")+(cls?" "+cls:"");m.textContent=text;el("fcMsgs").appendChild(m);el("fcMsgs").scrollTop=el("fcMsgs").scrollHeight;return m;}
+  function chips(){var c=ctx(),list=c?["Why did I get this score?","How do I fix my weakest area?","Which missing keywords matter most?"]:["How do I beat ATS filters?","What makes a strong resume bullet?","How should a fresher write a resume?"];
+    var box=el("fcChips");box.innerHTML="";if(hist.length>2)return;list.forEach(function(q){var b=document.createElement("button");b.className="fc-chip";b.textContent=q;b.onclick=function(){send(q);};box.appendChild(b);});}
+  function refreshCtx(){var c=ctx();el("fcCtx").textContent=c?"Using your analysis: "+(c.job_title||"this job")+" - score "+c.score+"/100":"";chips();}
+  function send(text){text=String(text||"").trim();if(!text||busyChat)return;busyChat=true;el("fcSend").disabled=true;el("fcInput").value="";
+    add("user",text);hist.push({role:"user",content:text});chips();var wait=add("bot","Thinking...");
+    fetch("/api/chat",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({messages:hist.slice(-8),context:ctx()})})
+      .then(function(r){return r.json().catch(function(){return {error:"Unexpected response."};});})
+      .then(function(d){if(d.error||!d.reply){wait.textContent=d.error||"Something went wrong. Try again.";wait.classList.add("err");hist.pop();return;}wait.textContent=d.reply;hist.push({role:"assistant",content:d.reply});})
+      .catch(function(){wait.textContent="Network problem. Try again.";wait.classList.add("err");hist.pop();})
+      .then(function(){busyChat=false;el("fcSend").disabled=false;el("fcMsgs").scrollTop=el("fcMsgs").scrollHeight;});}
+  el("fcBtn").addEventListener("click",function(){var p=el("fcPanel");var open=!p.classList.contains("open");p.classList.toggle("open",open);
+    if(open){if(!el("fcMsgs").children.length)add("bot",ctx()?"Hi! I'm FitCoach. I can see your latest analysis - ask me why you got this score, what to fix first, or how to prepare for this job.":"Hi! I'm FitCoach, your resume coach. Ask me anything about resumes, ATS, applications or interviews. Run an analysis and I'll give advice based on your own resume.");refreshCtx();el("fcInput").focus();}});
+  el("fcClose").addEventListener("click",function(){el("fcPanel").classList.remove("open");});
+  el("fcSend").addEventListener("click",function(){send(el("fcInput").value);});
+  el("fcInput").addEventListener("keydown",function(e){if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send(el("fcInput").value);}});
+  window.rfFitCoachRefresh=refreshCtx;
+})();
 // Interview prep
 var interviewData=null,interviewFilter="All";
 function renderInterview(){
@@ -934,12 +997,12 @@ function renderInterview(){
   d.questions.forEach(function(q){
     if(interviewFilter!=="All"&&q.category!==interviewFilter)return;
     var el=document.createElement("div");el.className="qa";
-    el.innerHTML='<span class="cat">'+esc(q.category||"")+'</span><div class="q">'+esc(q.question)+'</div><div class="why">Why they ask: '+esc(q.why_asked||"")+'</div><details><summary>Show answer outline</summary><div class="ans">'+esc(q.answer_outline||"")+'</div><div class="ev">From your resume: '+esc(q.resume_evidence||"")+'</div></details>';
+    el.innerHTML='<span class="cat">'+esc(q.category||"")+'</span><div class="q">'+esc(q.question)+'</div><div class="why">Why they ask: '+esc(q.why_asked||"")+'</div><details><summary>Show model answer</summary>'+(q.model_answer?'<div class="model">'+esc(q.model_answer)+'</div>':"")+'<div class="ans" style="margin-top:6px"><b>Outline:</b> '+esc(q.answer_outline||"")+'</div><div class="ev">From your resume: '+esc(q.resume_evidence||"")+'</div></details>';
     list.appendChild(el);
   });
 }
 $("interviewGo").addEventListener("click",function(){
-  if(!last)return;var btn=this;busy(btn,true,"Preparing...");$("interviewStatus").textContent="Building your question bank. About 20-30 seconds.";
+  if(!last)return;var btn=this;busy(btn,true,"Preparing...");$("interviewStatus").textContent="Predicting your interview questions and writing model answers. About 30-40 seconds.";
   post("/api/interview",{resume:last.resume,job:last.job}).then(function(d){
     interviewData=d;interviewFilter="All";$("interviewStatus").textContent="";
     $("interviewSummary").textContent=d.role_summary||"";
@@ -947,15 +1010,16 @@ $("interviewGo").addEventListener("click",function(){
     var f=$("interviewFilters");f.innerHTML="";cats.forEach(function(c){var p=document.createElement("button");p.className="pill"+(c==="All"?" active":"");p.textContent=c;p.onclick=function(){interviewFilter=c;var ps=f.querySelectorAll(".pill");for(var i=0;i<ps.length;i++)ps[i].classList.toggle("active",ps[i]===p);renderInterview();};f.appendChild(p);});
     renderInterview();
     var w=$("interviewWeak");w.innerHTML="";(d.weak_spots||[]).forEach(function(x){var li=document.createElement("li");li.innerHTML="<b>"+esc(x.topic)+"</b> - "+esc(x.how_to_handle);w.appendChild(li);});
-    var a=$("interviewAsk");a.innerHTML="";(d.questions_to_ask||[]).forEach(function(x){var li=document.createElement("li");li.textContent=x;a.appendChild(li);});
+    var st=$("interviewStudy");st.innerHTML="";(d.study_plan||[]).forEach(function(x){var li=document.createElement("li");li.innerHTML="<b>"+esc(x.topic)+"</b> - "+esc(x.why||"")+"<br><span style=\"color:var(--muted)\">Study: "+esc(x.what_to_study||"")+"</span>";st.appendChild(li);});
+    var a=$("interviewAsk");a.innerHTML="";(d.questions_to_ask||[]).forEach(function(x){if(x&&typeof x==="object")x=x.question||x.text||"";if(!x)return;var li=document.createElement("li");li.textContent=x;a.appendChild(li);});
     $("interviewOut").style.display="block";
   }).catch(function(e){$("interviewStatus").innerHTML='<span class="err">'+esc(e.message)+'</span>';}).then(function(){busy(btn,false);});
 });
 $("interviewDownload").addEventListener("click",function(){
-  if(!interviewData)return;var d=interviewData,out=["INTERVIEW PREP - "+(last.title||"")+(last.company?" at "+last.company:""),"",d.role_summary||"",""];
-  d.questions.forEach(function(q,i){out.push((i+1)+". ["+q.category+"] "+q.question);out.push("   Why: "+(q.why_asked||""));out.push("   Outline: "+(q.answer_outline||""));out.push("   Evidence: "+(q.resume_evidence||""));out.push("");});
-  out.push("WEAK SPOTS");(d.weak_spots||[]).forEach(function(x){out.push("- "+x.topic+": "+x.how_to_handle);});out.push("");out.push("QUESTIONS TO ASK");(d.questions_to_ask||[]).forEach(function(x){out.push("- "+x);});
-  try{letterPdf("",out.join("\n"),"").save("interview-prep-"+slug(last.company||last.title)+".pdf");}catch(e){toast(e.message);}
+  if(!interviewData)return;var d=interviewData,out=["INTERVIEW PREDICTOR - "+(last.title||"")+(last.company?" at "+last.company:""),"",d.role_summary||"",""];
+  d.questions.forEach(function(q,i){out.push((i+1)+". ["+q.category+"] "+q.question);out.push("   Why: "+(q.why_asked||""));out.push("   Outline: "+(q.answer_outline||""));if(q.model_answer)out.push("   Model answer: "+q.model_answer);out.push("   Evidence: "+(q.resume_evidence||""));out.push("");});
+  out.push("WHAT TO STUDY");(d.study_plan||[]).forEach(function(x){out.push("- "+x.topic+": "+(x.what_to_study||""));});out.push("");out.push("WEAK SPOTS");(d.weak_spots||[]).forEach(function(x){out.push("- "+x.topic+": "+x.how_to_handle);});out.push("");out.push("QUESTIONS TO ASK");(d.questions_to_ask||[]).forEach(function(x){out.push("- "+x);});
+  try{letterPdf("",out.join("\n"),"").save("interview-predictor-"+slug(last.company||last.title)+".pdf");}catch(e){toast(e.message);}
 });
 
 // Salary
