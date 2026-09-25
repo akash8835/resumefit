@@ -228,6 +228,7 @@ pre.resume[contenteditable]{outline:none}pre.resume[contenteditable]:focus{borde
 <label class="filebtn">Upload PDF / DOCX / TXT<input type="file" id="fileInput" disabled accept=".pdf,.docx,.txt" style="display:none"></label>
 <span class="hint" id="fileHint">Choose a resume file to analyze.</span>
 </div>
+<p id="fileError" class="err" role="alert" style="display:none;text-align:left;margin-top:8px"></p>
 <div id="saveVersionRow" style="display:none;margin-top:16px;text-align:left">
 <label class="lbl" for="versionLabel">Save this resume as a version (stays on this device)</label>
 <div class="row" style="margin-top:0;flex-wrap:nowrap"><input type="text" id="versionLabel" placeholder="e.g. Product Manager, Data Analyst"><button class="mini" id="saveVersionBtn">Save version</button></div>
@@ -597,11 +598,32 @@ document.getElementById("backToUploadBtn").addEventListener("click",function(){g
 document.getElementById("backToJobBtn").addEventListener("click",function(){goStep(2);});
 document.getElementById("startOverBtn").addEventListener("click",function(){document.getElementById("results").style.display="none";goStep(1);});
 if(window.pdfjsLib){pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";}
+var RF_FILE_TYPE_ERROR="Only PDF, DOCX or TXT files. Please upload your resume in one of these formats.";
+var RF_NOT_RESUME_ERROR="This doesn't look like a resume. Upload a file with your work experience, education and contact details.";
+function rfCheckFileType(f){
+  var name=String(f&&f.name||"").toLowerCase();
+  var ext=name.endsWith(".pdf")?"pdf":name.endsWith(".docx")?"docx":name.endsWith(".txt")?"txt":"";
+  var mime=String(f&&f.type||"").toLowerCase();
+  var allowed={pdf:["application/pdf"],docx:["application/vnd.openxmlformats-officedocument.wordprocessingml.document","application/zip"],txt:["text/plain"]};
+  if(!ext||mime&&mime!=="application/octet-stream"&&!allowed[ext].includes(mime))throw new Error(RF_FILE_TYPE_ERROR);
+  return ext;
+}
+function rfLooksLikeResume(value){
+  var text=String(value||"").trim();
+  if(text.length<80||/[\u0000-\u0008\u000b\u000e-\u001f]/.test(text))return false;
+  var contact=/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i.test(text)||/(?:\+?\d[\d\s().-]{7,}\d)/.test(text);
+  var groups=[/\b(?:work experience|professional experience|employment|internships?|work history|experience|अनुभव)\b/i,/\b(?:education|academic|degree|university|college|qualification|शिक्षा)\b/i,/\b(?:skills|technologies|technical skills|competencies|कौशल)\b/i,/\b(?:projects?|portfolio|certifications?|achievements?|प्रोजेक्ट)\b/i];
+  return contact&&groups.filter(function(re){return re.test(text);}).length>=2;
+}
+function rfValidateResumeText(text){if(!rfLooksLikeResume(text))throw new Error(RF_NOT_RESUME_ERROR);return text;}
+function rfShowFileError(message){var error=document.getElementById("fileError");error.textContent=message;error.style.display="block";}
+function rfClearFileError(){var error=document.getElementById("fileError");error.textContent="";error.style.display="none";}
 fileInput.addEventListener("change",async function(){
 if(!window.rfRequireConsent()){fileInput.value="";return;}
 var f=fileInput.files&&fileInput.files[0];
 if(!f)return;
-rfLastFile=f;
+rfLastFile=null;
+rfClearFileError();
 var name=f.name.toLowerCase();
 var hint=document.getElementById("fileHint");
 var next=document.getElementById("toJobBtn");
@@ -610,6 +632,7 @@ next.disabled=true;
 resumeInput.value="";
 function withTimeout(p){return Promise.race([p,new Promise(function(_,reject){setTimeout(function(){reject(new Error("Reading timed out"));},30000);})]);}
 try{
+rfCheckFileType(f);
 var text="";
 if(name.slice(-4)===".txt"){
 text=await withTimeout(f.text());
@@ -633,14 +656,18 @@ text=res.value||"";
 throw new Error("Unsupported file. Use PDF, DOCX or TXT.");
 }
 text=String(text||"").trim();
-if(!text)throw new Error("No readable text found in this file.");
+rfValidateResumeText(text);
 if(!hasConsent()||!hasLocation())throw new Error("Enable resume sharing and location, then select the file again.");
 resumeInput.value=text;
+rfLastFile=f;
 hint.textContent=f.name+" loaded.";
 next.disabled=false;
 if(window.rfOnResumeLoaded)window.rfOnResumeLoaded(text,f.name);
 }catch(e){
-hint.innerHTML="<span class=err>"+esc(e&&e.message?e.message:"Could not read that file.")+"</span>";
+var message=e&&e.message?e.message:"Could not read that file.";
+rfShowFileError(message);
+hint.textContent="Choose a resume file to analyze.";
+rfLastFile=null;fileInput.value="";
 next.disabled=true;
 }
 });
@@ -668,13 +695,14 @@ btn.textContent="Pull from link";
 window.rfReadResumeFile=async function(f){
 if(!window.rfRequireConsent())throw new Error("Resume sharing is required.");
 var name=f.name.toLowerCase();
+rfCheckFileType(f);
 function withTimeout(p){return Promise.race([p,new Promise(function(_,reject){setTimeout(function(){reject(new Error("Reading timed out"));},30000);})]);}
 var text="";
 if(name.slice(-4)===".txt"){text=await withTimeout(f.text());}
 else if(name.slice(-4)===".pdf"){if(!window.pdfjsLib)throw new Error("PDF reader did not load");var pdf=await withTimeout(pdfjsLib.getDocument({data:new Uint8Array(await withTimeout(f.arrayBuffer()))}).promise);var pages=[];for(var i=1;i<=pdf.numPages;i++){var page=await withTimeout(pdf.getPage(i));var tc=await withTimeout(page.getTextContent());var line=[];for(var j=0;j<tc.items.length;j++)line.push(tc.items[j].str);pages.push(line.join(" "));}text=pages.join("\n\n");}
 else if(name.slice(-5)===".docx"){if(!window.mammoth)throw new Error("DOCX reader did not load");var res=await withTimeout(mammoth.extractRawText({arrayBuffer:await withTimeout(f.arrayBuffer())}));text=res.value||"";}
 else throw new Error("Unsupported file. Use PDF, DOCX or TXT.");
-text=String(text||"").trim();if(!text)throw new Error("No readable text found in this file.");return text;};
+text=String(text||"").trim();return rfValidateResumeText(text);};
 var lastJobs=[];
 var jobsShown=0;
 document.getElementById("jobSearchBtn").addEventListener("click",function(){
@@ -893,9 +921,9 @@ function renderResumes(){
 }
 var versionText="",versionName="";
 $("versionFile").addEventListener("change",function(){
-  var f=this.files&&this.files[0];if(!f)return;$("versionFileHint").textContent="Reading "+f.name+"...";$("versionFileSave").disabled=true;
+  var f=this.files&&this.files[0];if(!f)return;versionText="";versionName="";$("versionFileHint").textContent="Reading "+f.name+"...";$("versionFileSave").disabled=true;
   window.rfReadResumeFile(f).then(async function(t){await window.rfShareResume(t,f);versionText=t;versionName=f.name;$("versionFileHint").textContent=f.name+" loaded.";$("versionFileSave").disabled=false;if(!$("versionFileLabel").value)$("versionFileLabel").value=f.name.replace(/\.(pdf|docx|txt)$/i,"").replace(/[_-]+/g," ");})
-  .catch(function(e){$("versionFileHint").innerHTML='<span class="err">'+esc(e.message)+'</span>';});
+  .catch(function(e){$("versionFile").value="";$("versionFileHint").innerHTML='<span class="err">'+esc(e.message)+'</span>';});
 });
 $("versionFileSave").addEventListener("click",function(){if(!window.rfRequireConsent()||!versionText)return;var r=saveResumeVersion($("versionFileLabel").value,versionText,versionName);versionText="";$("versionFileLabel").value="";$("versionFileSave").disabled=true;$("versionFileHint").textContent="Saved "+r.label+".";renderResumes();});
 
