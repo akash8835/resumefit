@@ -220,9 +220,11 @@ pre.resume[contenteditable]{outline:none}pre.resume[contenteditable]:focus{borde
 <div class="card upload-card">
 <h2>Your resume</h2>
 <p class="hint" style="margin-bottom:18px">Upload one PDF, DOCX, or TXT resume to begin.</p>
+<label id="shareConsentRow" style="display:flex;gap:10px;align-items:flex-start;text-align:left;margin-top:16px;font-size:13px;color:var(--muted);cursor:pointer"><input type="checkbox" id="shareConsent" required style="margin-top:3px;width:auto;flex:none"><span>Share my resume with the ResumeFit team so they can review real resumes and improve the analysis. Required to upload a resume and continue. <a href="#privacy" data-goto="privacy">Privacy Policy</a></span></label>
+<p id="consentStatus" class="hint" role="status" aria-live="polite">Please tick the sharing checkbox to enable resume uploads.</p>
 <textarea id="resumeInput" hidden aria-hidden="true"></textarea>
 <div class="row" style="margin-top:0">
-<label class="filebtn">Upload PDF / DOCX / TXT<input type="file" id="fileInput" accept=".pdf,.docx,.txt" style="display:none"></label>
+<label class="filebtn">Upload PDF / DOCX / TXT<input type="file" id="fileInput" disabled accept=".pdf,.docx,.txt" style="display:none"></label>
 <span class="hint" id="fileHint">Choose a resume file to analyze.</span>
 </div>
 <div id="saveVersionRow" style="display:none;margin-top:16px;text-align:left">
@@ -233,7 +235,7 @@ pre.resume[contenteditable]{outline:none}pre.resume[contenteditable]:focus{borde
 <div class="divider">or use a saved resume</div>
 <div class="saved-list" id="savedPickerList"></div>
 </div>
-<label id="shareConsentRow" style="display:flex;gap:10px;align-items:flex-start;text-align:left;margin-top:16px;font-size:13px;color:var(--muted);cursor:pointer"><input type="checkbox" id="shareConsent" style="margin-top:3px;width:auto;flex:none"><span>Share my resume with the ResumeFit team so they can review real resumes and improve the analysis. Optional - the tool works the same either way. <a href="#privacy" data-goto="privacy">Privacy Policy</a></span></label>
+
 <div class="step-actions"><button class="go" id="toJobBtn" disabled>Continue to job</button></div>
 </div>
 </section>
@@ -408,7 +410,7 @@ pre.resume[contenteditable]{outline:none}pre.resume[contenteditable]:focus{borde
 <div class="view-head"><h2>My resumes</h2><p>Keep a version per role type - PM, analyst, growth - and pick the right one for each job. Saved on this device only.</p></div>
 <div class="card" style="margin-bottom:14px">
 <h2>Add a version</h2>
-<div class="row" style="margin-top:0"><label class="filebtn">Upload PDF / DOCX / TXT<input type="file" id="versionFile" accept=".pdf,.docx,.txt" style="display:none"></label><span class="hint" id="versionFileHint">Upload a resume, name it, save.</span></div>
+<p class="hint">Resume sharing is required. <a href="#analyze" data-goto="analyze">Enable it in the Upload step</a> before uploading.</p><div class="row" style="margin-top:0"><label class="filebtn">Upload PDF / DOCX / TXT<input type="file" id="versionFile" disabled accept=".pdf,.docx,.txt" style="display:none"></label><span class="hint" id="versionFileHint">Upload a resume, name it, save.</span></div>
 <div class="row" style="flex-wrap:nowrap"><input type="text" id="versionFileLabel" placeholder="Version name, e.g. Product Manager"><button class="mini" id="versionFileSave" disabled>Save version</button></div>
 </div>
 <div id="resumeList"></div>
@@ -439,7 +441,7 @@ pre.resume[contenteditable]{outline:none}pre.resume[contenteditable]:focus{borde
 </div>
 </div>
 <div class="view" id="view-about"><div class="view-head"><h2>About ResumeFit</h2><p>A free resume coach built by a job seeker, for job seekers.</p></div><div class="card legal"><p style="font-size:14px;margin-bottom:10px">ResumeFit started from a simple frustration: after dozens of job applications and very few replies, it was clear the resume was the problem - but nobody said exactly what to fix for each job. So we built a tool that does.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">What ResumeFit does</h2><ul style="font-size:14px;margin:0 0 10px 20px"><li style="margin-bottom:6px">Scores your resume against a specific job and shows exactly what to fix, line by line</li><li style="margin-bottom:6px">Rewrites it for that job and gives you a clean, ATS-safe PDF</li><li style="margin-bottom:6px">Writes a cover letter, predicts interview questions, and estimates the salary range</li><li style="margin-bottom:6px">Tracks your applications, keeps a resume version per role, and compares up to 5 jobs at once</li><li style="margin-bottom:6px">Helps you find people who can refer you, and tunes your LinkedIn profile</li></ul><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">What we believe</h2><ul style="font-size:14px;margin:0 0 10px 20px"><li style="margin-bottom:6px"><b>Honest over impressive.</b> ResumeFit never invents experience, numbers or skills. It only rephrases and re-orders what is really in your resume, and tells you plainly when a job needs something you do not have.</li><li style="margin-bottom:6px"><b>Free and no signup.</b> Job hunting is stressful enough. You can use every feature without an account.</li><li style="margin-bottom:6px"><b>Your data stays yours.</b> Saved resumes, history and your tracker live in your own browser, not on our servers. We only keep a resume if you tick the optional sharing box.</li></ul><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">Who is behind it</h2><p style="font-size:14px;margin-bottom:10px">ResumeFit is built and run by Akash Sharma, an aspiring product manager based in India. Feedback shapes what we build next - write to us at <a href="mailto:ashwatthama710@gmail.com">ashwatthama710@gmail.com</a> or use the <a href='#contact' data-goto='contact'>Contact us</a> page.</p></div></div>
-<div class="view" id="view-privacy"><div class="view-head"><h2>Privacy Policy</h2><p>What ResumeFit does with your information, in plain language.</p></div><div class="card legal"><p style="font-size:14px;margin-bottom:10px">ResumeFit (&quot;we&quot;, &quot;us&quot;) is a free resume analysis tool at resumefit-app.ashwatthama710.workers.dev. This policy explains what information is processed when you use it. By using ResumeFit you agree to this policy.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">1. No accounts</h2><p style="font-size:14px;margin-bottom:10px">ResumeFit does not ask you to create an account, and we do not collect your name, email or phone number to use the tool. The only exception is the optional update email described below, which you choose whether to give.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">2. Information you give us and how it is used</h2><ul style="font-size:14px;margin:0 0 10px 20px"><li style="margin-bottom:6px"><b>Resume content.</b> When you upload a PDF, DOCX or TXT file, the text is read inside your browser. When you run an analysis or another AI feature, that text is sent to our server only to produce the result.</li><li style="margin-bottom:6px"><b>Job descriptions and links.</b> Job text you paste, or pages we fetch from a link you provide (for example LinkedIn or Naukri), are used only to produce your result.</li><li style="margin-bottom:6px"><b>Job searches.</b> Search terms you type are sent to third-party job listing services to fetch matching jobs.</li><li style="margin-bottom:6px"><b>LinkedIn profile text</b> you paste into the LinkedIn optimizer is used only to produce suggestions.</li><li style="margin-bottom:6px"><b>Anonymous usage statistics.</b> When you run an analysis we keep a small anonymous record: the match score, the job title and company from the job description, the job keywords your resume was missing, the date, and your approximate country/region and device type. It contains no resume text, name or contact details, and is used only to understand how ResumeFit is used and improve it.</li><li style="margin-bottom:6px"><b>Optional resume sharing.</b> On the upload step there is a checkbox, unticked by default: &quot;Share my resume with the ResumeFit team&quot;. If you leave it unticked, your resume is processed in memory only to produce your results and is never stored on our servers. If you tick it, we store a copy of the resume you continue with (the file and its text), the date and time you agreed, your approximate country/region and device type. Only the site owner can see these copies, and they are used only to review real resumes and improve ResumeFit. They are never sold, published or shared. To have your copy deleted, email us.</li><li style="margin-bottom:6px"><b>Chrome extension downloads.</b> Each time the extension zip is downloaded we log the date and time, the approximate country, region and city that Cloudflare derives from the connection, and the browser user agent (device and browser type). We do not store your IP address. We use this only to count downloads and see where they come from.</li><li style="margin-bottom:6px"><b>Optional update email.</b> On the extension page you can leave your email to get ResumeFit updates. It is optional and the download works without it. If you give it, we store the email with the date, approximate region and device type, and use it only to send ResumeFit updates. To have it deleted, email us.</li></ul><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">3. AI processing</h2><p style="font-size:14px;margin-bottom:10px">Analyses, rewrites, cover letters, interview prep, salary estimates, LinkedIn suggestions and referral messages are generated by an AI model running on Cloudflare Workers AI. Your resume and job text are sent to that model to generate the response. Unless you tick the optional sharing box, we do not store your resume or results on our servers after the response is returned, and we do not use your content to train AI models. AI output can be wrong or incomplete - always review it before you use it.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">4. Data stored on your device</h2><p style="font-size:14px;margin-bottom:10px">Saved resume versions, score history, your application tracker, and any LinkedIn Connections file you import are stored in your browser's local storage on your device. They are not uploaded to our servers, and your imported connections are never sent anywhere. You can delete this data at any time from the app (Delete, Clear history, Remove) or by clearing your browser's site data.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">5. Third-party services</h2><ul style="font-size:14px;margin:0 0 10px 20px"><li style="margin-bottom:6px"><b>Cloudflare</b> hosts the app and runs the AI model. Cloudflare may process technical data such as IP address for security and reliability.</li><li style="margin-bottom:6px"><b>Job listing services</b> (Remotive, Arbeitnow, Jooble, Himalayas, Jobicy, RemoteJobs.org) receive your search terms.</li><li style="margin-bottom:6px"><b>cdnjs</b> serves the open-source libraries used to read PDF/DOCX files and create PDFs.</li><li style="margin-bottom:6px">Pages you pull by link are fetched from the site you point to.</li></ul><p style="font-size:14px;margin-bottom:10px">Each service handles data under its own privacy policy.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">6. Cookies, analytics and ads</h2><p style="font-size:14px;margin-bottom:10px">ResumeFit does not use cookies, tracking pixels or third-party analytics, and does not show ads. The only records we keep are anonymous analysis statistics, the extension download log, optional update emails, and resumes you choose to share, as described in section 2, stored in our Cloudflare database and seen only by the site owner. If we add advertising or analytics in future (for example Google AdSense), we will update this policy first to explain what is collected and how to opt out.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">7. We do not sell your data</h2><p style="font-size:14px;margin-bottom:10px">We do not sell, rent or share your personal information, email or resume content with anyone for marketing.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">8. Security</h2><p style="font-size:14px;margin-bottom:10px">All traffic to ResumeFit uses HTTPS. No online service is perfectly secure, so avoid including details you do not need on a resume, such as ID numbers or bank details.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">9. Children</h2><p style="font-size:14px;margin-bottom:10px">ResumeFit is meant for people aged 16 and over who are looking for work.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">10. Your choices</h2><p style="font-size:14px;margin-bottom:10px">You control your data: you choose what to upload, you can clear everything stored in your browser, and apart from the download log, any email you give and any resume you choose to share, nothing about you is kept on our servers. For any privacy question or request, contact us.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">11. Changes</h2><p style="font-size:14px;margin-bottom:10px">We may update this policy as the product changes. The version on this page is the one that applies.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">12. Contact</h2><p style="font-size:14px;margin-bottom:10px">Email <a href="mailto:ashwatthama710@gmail.com">ashwatthama710@gmail.com</a>.</p></div></div>
+<div class="view" id="view-privacy"><div class="view-head"><h2>Privacy Policy</h2><p>What ResumeFit does with your information, in plain language.</p></div><div class="card legal"><p style="font-size:14px;margin-bottom:10px">ResumeFit (&quot;we&quot;, &quot;us&quot;) is a free resume analysis tool at resumefit-app.ashwatthama710.workers.dev. This policy explains what information is processed when you use it. By using ResumeFit you agree to this policy.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">1. No accounts</h2><p style="font-size:14px;margin-bottom:10px">ResumeFit does not ask you to create an account, and we do not collect your name, email or phone number to use the tool. The only exception is the optional update email described below, which you choose whether to give.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">2. Information you give us and how it is used</h2><ul style="font-size:14px;margin:0 0 10px 20px"><li style="margin-bottom:6px"><b>Resume content.</b> When you upload a PDF, DOCX or TXT file, the text is read inside your browser. When you run an analysis or another AI feature, that text is sent to our server to produce the result. A copy is also stored under the required sharing agreement described below.</li><li style="margin-bottom:6px"><b>Job descriptions and links.</b> Job text you paste, or pages we fetch from a link you provide (for example LinkedIn or Naukri), are used only to produce your result.</li><li style="margin-bottom:6px"><b>Job searches.</b> Search terms you type are sent to third-party job listing services to fetch matching jobs.</li><li style="margin-bottom:6px"><b>LinkedIn profile text</b> you paste into the LinkedIn optimizer is used only to produce suggestions.</li><li style="margin-bottom:6px"><b>Anonymous usage statistics.</b> When you run an analysis we keep a small anonymous record: the match score, the job title and company from the job description, the job keywords your resume was missing, the date, and your approximate country/region and device type. It contains no resume text, name or contact details, and is used only to understand how ResumeFit is used and improve it.</li><li style="margin-bottom:6px"><b>Required resume sharing.</b> On the upload step there is a checkbox, unticked by default: &quot;Share my resume with the ResumeFit team&quot;. You must tick it before uploading or using a saved resume. When you continue or upload in My resumes, we store a copy of the resume you continue with (its text and, where supported by the file size limit, the original file), the date and time you agreed, your approximate country/region and device type. Only the site owner can see these copies, and they are used only to review real resumes and improve ResumeFit. They are never sold, published or shared. To have your copy deleted, email us.</li><li style="margin-bottom:6px"><b>Chrome extension downloads.</b> Each time the extension zip is downloaded we log the date and time, the approximate country, region and city that Cloudflare derives from the connection, and the browser user agent (device and browser type). We do not store your IP address. We use this only to count downloads and see where they come from.</li><li style="margin-bottom:6px"><b>Optional update email.</b> On the extension page you can leave your email to get ResumeFit updates. It is optional and the download works without it. If you give it, we store the email with the date, approximate region and device type, and use it only to send ResumeFit updates. To have it deleted, email us.</li></ul><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">3. AI processing</h2><p style="font-size:14px;margin-bottom:10px">Analyses, rewrites, cover letters, interview prep, salary estimates, LinkedIn suggestions and referral messages are generated by an AI model running on Cloudflare Workers AI. Your resume and job text are sent to that model to generate the response. Resume copies are stored under the required sharing agreement described above. We do not use your content to train AI models. AI output can be wrong or incomplete - always review it before you use it.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">4. Data stored on your device</h2><p style="font-size:14px;margin-bottom:10px">Saved resume versions, score history, your application tracker, and any LinkedIn Connections file you import are stored in your browser's local storage on your device. Resume copies are also shared with our team as described above. Your imported connections are never sent anywhere. You can delete this data at any time from the app (Delete, Clear history, Remove) or by clearing your browser's site data.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">5. Third-party services</h2><ul style="font-size:14px;margin:0 0 10px 20px"><li style="margin-bottom:6px"><b>Cloudflare</b> hosts the app and runs the AI model. Cloudflare may process technical data such as IP address for security and reliability.</li><li style="margin-bottom:6px"><b>Job listing services</b> (Remotive, Arbeitnow, Jooble, Himalayas, Jobicy, RemoteJobs.org) receive your search terms.</li><li style="margin-bottom:6px"><b>cdnjs</b> serves the open-source libraries used to read PDF/DOCX files and create PDFs.</li><li style="margin-bottom:6px">Pages you pull by link are fetched from the site you point to.</li></ul><p style="font-size:14px;margin-bottom:10px">Each service handles data under its own privacy policy.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">6. Cookies, analytics and ads</h2><p style="font-size:14px;margin-bottom:10px">ResumeFit does not use cookies, tracking pixels or third-party analytics, and does not show ads. The only records we keep are anonymous analysis statistics, the extension download log, optional update emails, and resumes you choose to share, as described in section 2, stored in our Cloudflare database and seen only by the site owner. If we add advertising or analytics in future (for example Google AdSense), we will update this policy first to explain what is collected and how to opt out.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">7. We do not sell your data</h2><p style="font-size:14px;margin-bottom:10px">We do not sell, rent or share your personal information, email or resume content with anyone for marketing.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">8. Security</h2><p style="font-size:14px;margin-bottom:10px">All traffic to ResumeFit uses HTTPS. No online service is perfectly secure, so avoid including details you do not need on a resume, such as ID numbers or bank details.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">9. Children</h2><p style="font-size:14px;margin-bottom:10px">ResumeFit is meant for people aged 16 and over who are looking for work.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">10. Your choices</h2><p style="font-size:14px;margin-bottom:10px">You control your data: you choose what to upload, you can clear everything stored in your browser, and apart from the download log, any email you give and any resume you choose to share, nothing about you is kept on our servers. For any privacy question or request, contact us.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">11. Changes</h2><p style="font-size:14px;margin-bottom:10px">We may update this policy as the product changes. The version on this page is the one that applies.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">12. Contact</h2><p style="font-size:14px;margin-bottom:10px">Email <a href="mailto:ashwatthama710@gmail.com">ashwatthama710@gmail.com</a>.</p></div></div>
 <div class="view" id="view-terms"><div class="view-head"><h2>Terms &amp; Conditions</h2><p>The rules for using ResumeFit.</p></div><div class="card legal"><p style="font-size:14px;margin-bottom:10px">By using ResumeFit you agree to these terms. If you do not agree, please do not use the service.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">1. The service</h2><p style="font-size:14px;margin-bottom:10px">ResumeFit is a free online tool that analyses resumes against job descriptions and generates suggestions, rewritten resumes, cover letters, interview preparation, salary estimates, LinkedIn suggestions and referral messages using AI. Features may change, be added or removed at any time.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">2. Your content</h2><ul style="font-size:14px;margin:0 0 10px 20px"><li style="margin-bottom:6px">You keep full ownership of the resumes, job descriptions and other content you provide.</li><li style="margin-bottom:6px">You give us permission to process that content only to provide the service to you (see the <a href='#privacy' data-goto='privacy'>Privacy Policy</a>).</li><li style="margin-bottom:6px">Only upload content you have the right to use. Do not upload another person's resume without their permission.</li></ul><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">3. Honest use</h2><p style="font-size:14px;margin-bottom:10px">ResumeFit is designed to help you present your real experience well. You agree not to use it to create false or misleading resumes, fake credentials or invented achievements. You are responsible for making sure everything you send to an employer is true.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">4. AI output and no guarantees</h2><p style="font-size:14px;margin-bottom:10px">AI-generated content can contain mistakes. Match scores, salary estimates and interview questions are guidance, not facts or predictions of outcome. ResumeFit does not guarantee interviews, job offers or any hiring result. Review and edit every output before using it. Salary figures are estimates, not offers or financial advice.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">5. Acceptable use</h2><ul style="font-size:14px;margin:0 0 10px 20px"><li style="margin-bottom:6px">Do not misuse the service: no automated scraping, bulk requests, attempts to break or overload it, or attempts to access other people's data.</li><li style="margin-bottom:6px">Do not use it for anything unlawful, or to upload malicious files.</li><li style="margin-bottom:6px">The free AI capacity is shared; we may limit usage to keep the service available for everyone.</li></ul><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">6. Third-party content and links</h2><p style="font-size:14px;margin-bottom:10px">Job listings, job pages and LinkedIn searches come from third-party sites. We do not control them and are not responsible for their accuracy or availability. Using those sites is subject to their own terms.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">7. Chrome extension</h2><p style="font-size:14px;margin-bottom:10px">The ResumeFit Chrome extension reads the job details on the page you choose to analyse and opens them in ResumeFit. It is provided as-is and may stop working if those sites change their layout.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">8. Availability</h2><p style="font-size:14px;margin-bottom:10px">The service is provided free, &quot;as is&quot; and &quot;as available&quot;, without warranties of any kind. It may be interrupted, slow or unavailable at times.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">9. Limitation of liability</h2><p style="font-size:14px;margin-bottom:10px">To the fullest extent allowed by law, ResumeFit and its creator are not liable for any indirect or consequential loss, or for any decision you make based on the service's output.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">10. Changes and law</h2><p style="font-size:14px;margin-bottom:10px">We may update these terms; continued use means you accept the updated terms. These terms are governed by the laws of India.</p><h2 style="font-size:14px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:18px 0 8px">11. Contact</h2><p style="font-size:14px;margin-bottom:10px">Questions about these terms: <a href="mailto:ashwatthama710@gmail.com">ashwatthama710@gmail.com</a>.</p></div></div>
 <div class="view" id="view-contact">
 <div class="view-head"><h2>Contact us</h2><p>Questions, feedback, a bug, or a feature you want? We read every message.</p></div>
@@ -481,7 +483,7 @@ pre.resume[contenteditable]{outline:none}pre.resume[contenteditable]:focus{borde
 </div>
 
 
-<footer><div style="margin-bottom:8px"><a href="#about" data-goto="about" style="color:var(--accent);text-decoration:none;margin:0 8px">About us</a><a href="#contact" data-goto="contact" style="color:var(--accent);text-decoration:none;margin:0 8px">Contact us</a><a href="#privacy" data-goto="privacy" style="color:var(--accent);text-decoration:none;margin:0 8px">Privacy Policy</a><a href="#terms" data-goto="terms" style="color:var(--accent);text-decoration:none;margin:0 8px">Terms &amp; Conditions</a></div>Free, no signup. Your resume text is sent to the AI model for analysis and is not stored unless you choose to share it. Saved resumes, history, tracker and connections stay in your browser on this device.</footer>
+<footer><div style="margin-bottom:8px"><a href="#about" data-goto="about" style="color:var(--accent);text-decoration:none;margin:0 8px">About us</a><a href="#contact" data-goto="contact" style="color:var(--accent);text-decoration:none;margin:0 8px">Contact us</a><a href="#privacy" data-goto="privacy" style="color:var(--accent);text-decoration:none;margin:0 8px">Privacy Policy</a><a href="#terms" data-goto="terms" style="color:var(--accent);text-decoration:none;margin:0 8px">Terms &amp; Conditions</a></div>Free, no signup. Resume sharing with our team is required to upload and continue. A copy is stored for review and improving the analysis; resume text is also sent to the AI model. Saved resumes, history, tracker and connections stay in your browser on this device.</footer>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -501,22 +503,51 @@ for(var j=0;j<dots.length;j++){dots[j].classList.toggle("active",parseInt(dots[j
 window.scrollTo({top:0,behavior:"smooth"});
 }
 window.rfGoStep=goStep;
-var rfLastFile=null,rfSharedKey="";
-function rfShareResume(){
-var cb=document.getElementById("shareConsent");if(!cb||!cb.checked)return;
-var text=resumeInput.value.trim();if(!text)return;
-var key=text.length+":"+text.slice(0,80);if(key===rfSharedKey)return;rfSharedKey=key;
-var payload={consent:true,consent_text:cb.parentNode.textContent.replace("Privacy Policy","").trim(),text:text.slice(0,60000)};
-function send(){fetch("/api/share-resume",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(payload),keepalive:!payload.file_b64}).catch(function(){});}
-var f=rfLastFile;
-if(f&&f.size<=1500000){var r=new FileReader();r.onload=function(){payload.filename=f.name;payload.mime=f.type||"";payload.file_b64=String(r.result).split(",")[1]||"";send();};r.onerror=send;r.readAsDataURL(f);}else send();
+var rfLastFile=null,rfSharedText="",rfSharing=false;
+function hasConsent(){return document.getElementById("shareConsent").checked;}
+window.rfHasConsent=hasConsent;
+window.rfClearFile=function(){rfLastFile=null;};
+function syncConsent(){
+var allowed=hasConsent();
+fileInput.disabled=!allowed;
+document.getElementById("versionFile").disabled=!allowed;
+[fileInput,document.getElementById("versionFile")].forEach(function(input){input.parentNode.style.opacity=allowed?"1":"0.5";input.parentNode.setAttribute("aria-disabled",String(!allowed));});
+document.getElementById("toJobBtn").disabled=!allowed||!resumeInput.value.trim()||rfSharing;
+document.querySelectorAll("#savedPickerList button").forEach(function(b){b.disabled=!allowed;});
+document.getElementById("consentStatus").textContent=allowed?"Resume sharing enabled.":"Please tick the sharing checkbox to enable resume uploads.";
 }
-document.getElementById("toJobBtn").addEventListener("click",function(){if(resumeInput.value.trim()){rfShareResume();goStep(2);}});
+window.rfRequireConsent=function(){if(hasConsent())return true;goStep(1);document.getElementById("shareConsent").focus();return false;};
+document.getElementById("shareConsent").addEventListener("change",function(){rfSharedText="";syncConsent();});
+syncConsent();
+async function rfShareResume(text,file){
+if(!window.rfRequireConsent())throw new Error("Please agree to share your resume before continuing.");
+text=(text||resumeInput.value).trim();
+if(!text)throw new Error("Please upload a resume first.");
+if(text===rfSharedText)return;
+var cb=document.getElementById("shareConsent");
+var payload={consent:true,consent_text:cb.parentNode.textContent.replace("Privacy Policy","").trim(),text:text.slice(0,60000)};
+var f=file===undefined?rfLastFile:file;
+if(f&&f.size<=1050000){payload.filename=f.name;payload.mime=f.type||"";payload.file_b64=await new Promise(function(resolve,reject){var r=new FileReader();r.onload=function(){resolve(String(r.result).split(",")[1]||"");};r.onerror=function(){reject(new Error("Could not read the resume. Please retry."));};r.readAsDataURL(f);});}
+if(!hasConsent())throw new Error("Resume sharing is required.");
+var response=await fetch("/api/share-resume",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(payload)});
+var data=await response.json();
+if(!response.ok||!data.ok)throw new Error(data.error||"Could not share your resume. Please retry.");
+if(!hasConsent())throw new Error("Resume sharing is required.");
+rfSharedText=text;
+}
+window.rfShareResume=rfShareResume;
+document.getElementById("toJobBtn").addEventListener("click",async function(){
+if(!window.rfRequireConsent()||!resumeInput.value.trim()||rfSharing)return;
+rfSharing=true;syncConsent();
+try{await rfShareResume();goStep(2);}catch(e){document.getElementById("consentStatus").textContent=e.message;}
+finally{rfSharing=false;document.getElementById("toJobBtn").disabled=!hasConsent()||!resumeInput.value.trim();}
+});
 document.getElementById("backToUploadBtn").addEventListener("click",function(){goStep(1);});
 document.getElementById("backToJobBtn").addEventListener("click",function(){goStep(2);});
 document.getElementById("startOverBtn").addEventListener("click",function(){document.getElementById("results").style.display="none";goStep(1);});
 if(window.pdfjsLib){pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";}
 fileInput.addEventListener("change",async function(){
+if(!window.rfRequireConsent()){fileInput.value="";return;}
 var f=fileInput.files&&fileInput.files[0];
 if(!f)return;
 rfLastFile=f;
@@ -552,6 +583,7 @@ throw new Error("Unsupported file. Use PDF, DOCX or TXT.");
 }
 text=String(text||"").trim();
 if(!text)throw new Error("No readable text found in this file.");
+if(!hasConsent())throw new Error("Resume sharing is required. Please select the file again.");
 resumeInput.value=text;
 hint.textContent=f.name+" loaded.";
 next.disabled=false;
@@ -583,6 +615,7 @@ btn.textContent="Pull from link";
 });
 });
 window.rfReadResumeFile=async function(f){
+if(!window.rfRequireConsent())throw new Error("Resume sharing is required.");
 var name=f.name.toLowerCase();
 function withTimeout(p){return Promise.race([p,new Promise(function(_,reject){setTimeout(function(){reject(new Error("Reading timed out"));},30000);})]);}
 var text="";
@@ -634,6 +667,7 @@ if(jobsShown<lastJobs.length){var more=document.createElement("button");more.cla
 }
 function esc(s){var d=document.createElement("div");d.textContent=s;return d.innerHTML;}
 document.getElementById("analyzeBtn").addEventListener("click",function(){
+if(!window.rfRequireConsent())return;
 var resume=resumeInput.value.trim();
 var job=jdInput.value.trim();
 if(!resume||!job){statusEl.innerHTML="<span class=err>Please upload your resume and add the job description.</span>";return;}
@@ -642,7 +676,7 @@ btn.disabled=true;
 btn.textContent="Analyzing...";
 statusEl.textContent="Reading your resume against the job. Usually 15-30 seconds.";
 document.getElementById("results").style.display="none";
-fetch(API+"/api/analyze",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({resume:resume,job:job})}).then(function(resp){
+rfShareResume().then(function(){return fetch(API+"/api/analyze",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({resume:resume,job:job,consent:hasConsent()})});}).then(function(resp){
 return resp.json().then(function(data){
 if(!resp.ok||data.error){throw new Error(data.error||"Analysis failed.");}
 showResults(data);
@@ -717,7 +751,7 @@ function scoreCls(s){return s>=70?"s-hi":(s>=45?"s-md":"s-lo");}
 function scoreCol(s){return s>=70?"var(--green)":(s>=45?"var(--amber)":"var(--red)");}
 function clampScore(v){return Math.max(0,Math.min(100,parseInt(v,10)||0));}
 function copyText(t){return navigator.clipboard.writeText(t).then(function(){toast("Copied");},function(){toast("Copy failed - select and copy manually");});}
-function post(path,body){return fetch(path,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)}).then(function(r){return r.json().catch(function(){return {error:"Unexpected response."};}).then(function(d){if(!r.ok||d.error)throw new Error(d.error||"Request failed.");return d;});});}
+function post(path,body){var ready=body.resume?window.rfShareResume(body.resume,null):Promise.resolve();return ready.then(function(){if(body.resume)body.consent=window.rfHasConsent();return fetch(path,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});}).then(function(r){return r.json().catch(function(){return {error:"Unexpected response."};}).then(function(d){if(!r.ok||d.error)throw new Error(d.error||"Request failed.");return d;});});}
 function download(name,blob){var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},500);}
 function slug(s){return String(s||"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,40)||"file";}
 
@@ -749,9 +783,10 @@ function saveResumeVersion(label,text,filename){
   return existing;
 }
 function useResume(r){
+  if(!window.rfRequireConsent())return false;
   $("resumeInput").value=r.text;save(ACTIVE_KEY,r.id);
   $("fileHint").textContent="Using saved resume: "+r.label;
-  rfLastFile=null;$("toJobBtn").disabled=false;$("saveVersionRow").style.display="none";
+  window.rfClearFile();$("toJobBtn").disabled=false;$("saveVersionRow").style.display="none";
   renderSavedPicker();
 }
 function renderSavedPicker(){
@@ -761,7 +796,7 @@ function renderSavedPicker(){
     var el=document.createElement("div");el.className="saved-item"+(r.id===act&&currentResumeText()===r.text?" active":"");
     el.innerHTML='<div><div class="t">'+esc(r.label)+'</div><div class="m">'+esc(r.filename||"")+(r.filename?" - ":"")+"updated "+esc(fmtDate(r.updated))+'</div></div>';
     var b=document.createElement("button");b.className="mini";b.textContent=(r.id===act&&currentResumeText()===r.text)?"Selected":"Use this";
-    b.onclick=function(){useResume(r);};el.appendChild(b);box.appendChild(el);
+    b.disabled=!window.rfHasConsent();b.onclick=function(){useResume(r);};el.appendChild(b);box.appendChild(el);
   });
 }
 window.rfOnResumeLoaded=function(text,filename){
@@ -773,7 +808,7 @@ window.rfOnResumeLoaded=function(text,filename){
   renderSavedPicker();
 };
 $("saveVersionBtn").addEventListener("click",function(){
-  var t=currentResumeText();if(!t)return;
+  var t=currentResumeText();if(!window.rfRequireConsent()||!t)return;
   var r=saveResumeVersion($("versionLabel").value,t,load("rf_last_upload",{}).filename);
   $("saveVersionRow").style.display="none";toast("Saved as "+r.label);
 });
@@ -799,7 +834,7 @@ function renderResumes(){
     el.innerHTML='<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center"><div><div style="font-weight:700;font-size:16px">'+esc(r.label)+'</div><div class="hint">'+esc(r.filename||"")+(r.filename?" - ":"")+'updated '+esc(fmtDate(r.updated))+' - '+r.text.split(/\s+/).length+' words - '+runs.length+' analyses'+(runs.length?' - best match '+best:'')+'</div></div><div class="row" style="margin-top:0"></div></div><pre class="resume" style="max-height:160px;margin-top:10px;font-size:12px"></pre>';
     el.querySelector("pre").textContent=r.text.slice(0,1400)+(r.text.length>1400?"...":"");
     var acts=el.querySelector(".row");
-    var use=document.createElement("button");use.className="btn primary";use.textContent="Analyze with this";use.onclick=function(){useResume(r);showView("analyze");window.rfGoStep(2);};
+    var use=document.createElement("button");use.className="btn primary";use.textContent="Analyze with this";use.onclick=function(){showView("analyze");useResume(r);window.rfGoStep(1);};
     var ren=document.createElement("button");ren.className="btn";ren.textContent="Rename";ren.onclick=function(){var nv=prompt("New name for this version",r.label);if(nv&&nv.trim()){var l=resumes();l.forEach(function(x){if(x.id===r.id)x.label=nv.trim();});save(RES_KEY,l);renderResumes();renderSavedPicker();}};
     var del=document.createElement("button");del.className="btn";del.textContent="Delete";del.onclick=function(){if(!confirm("Delete "+r.label+"?"))return;save(RES_KEY,resumes().filter(function(x){return x.id!==r.id;}));updateCounts();renderResumes();renderSavedPicker();};
     acts.appendChild(use);acts.appendChild(ren);acts.appendChild(del);box.appendChild(el);
@@ -808,10 +843,10 @@ function renderResumes(){
 var versionText="",versionName="";
 $("versionFile").addEventListener("change",function(){
   var f=this.files&&this.files[0];if(!f)return;$("versionFileHint").textContent="Reading "+f.name+"...";$("versionFileSave").disabled=true;
-  window.rfReadResumeFile(f).then(function(t){versionText=t;versionName=f.name;$("versionFileHint").textContent=f.name+" loaded.";$("versionFileSave").disabled=false;if(!$("versionFileLabel").value)$("versionFileLabel").value=f.name.replace(/\.(pdf|docx|txt)$/i,"").replace(/[_-]+/g," ");})
+  window.rfReadResumeFile(f).then(async function(t){await window.rfShareResume(t,f);versionText=t;versionName=f.name;$("versionFileHint").textContent=f.name+" loaded.";$("versionFileSave").disabled=false;if(!$("versionFileLabel").value)$("versionFileLabel").value=f.name.replace(/\.(pdf|docx|txt)$/i,"").replace(/[_-]+/g," ");})
   .catch(function(e){$("versionFileHint").innerHTML='<span class="err">'+esc(e.message)+'</span>';});
 });
-$("versionFileSave").addEventListener("click",function(){if(!versionText)return;var r=saveResumeVersion($("versionFileLabel").value,versionText,versionName);versionText="";$("versionFileLabel").value="";$("versionFileSave").disabled=true;$("versionFileHint").textContent="Saved "+r.label+".";renderResumes();});
+$("versionFileSave").addEventListener("click",function(){if(!window.rfRequireConsent()||!versionText)return;var r=saveResumeVersion($("versionFileLabel").value,versionText,versionName);versionText="";$("versionFileLabel").value="";$("versionFileSave").disabled=true;$("versionFileHint").textContent="Saved "+r.label+".";renderResumes();});
 
 /* ---------- Results hooks: history, tools ---------- */
 var HIST_KEY="rf_history";
@@ -1267,8 +1302,8 @@ function handleHash(){
     history.replaceState(null,"",location.pathname);
     showView("analyze");
     if(!currentResumeText()){var list=resumes(),act=load(ACTIVE_KEY,""),pick=null;list.forEach(function(r){if(r.id===act)pick=r;});pick=pick||list[0];if(!pick){var lu=load("rf_last_upload",null);if(lu&&lu.text)pick={id:"",label:"Last uploaded resume",text:lu.text};}
-      if(pick){useResume(pick);window.rfGoStep(2);}else{$("fileHint").textContent="Job loaded. Upload your resume to continue.";}}
-    else window.rfGoStep(2);
+      if(pick){useResume(pick);window.rfGoStep(1);}else{$("fileHint").textContent="Job loaded. Upload your resume to continue.";}}
+    else window.rfGoStep(1);
   }catch(e){}
 }
 window.addEventListener("hashchange",handleHash);
@@ -1291,3 +1326,4 @@ updateCounts();renderSavedPicker();handleHash();
 </script>
 </body>
 </html>
+

@@ -46,7 +46,7 @@ Also includes a live job browser (Remotive, Arbeitnow, Jooble India, Himalayas, 
 
 ## API
 
-- `POST /api/analyze` — `{ "resume": "...", "job": "..." }` → score, verdict, flaws, cuts, missing_keywords, recruiter_tips, rewritten_resume
+- `POST /api/analyze` — `{ "resume": "...", "job": "...", "consent": true }` → score, verdict, flaws, cuts, missing_keywords, recruiter_tips, rewritten_resume
 - `POST /api/jobdesc` — `{ "url": "<linkedin/naukri job link>" }` → extracted job description
 - `GET /api/jobs?q=<query>` — live job listings
 - `POST /api/cover-letter`, `/api/interview`, `/api/linkedin`, `/api/quick-score`, `/api/salary`, `/api/referral-message`
@@ -57,7 +57,7 @@ Also includes a live job browser (Remotive, Arbeitnow, Jooble India, Himalayas, 
 A SQLite-backed Durable Object (`AnalyticsDB`, free tier) stores:
 - extension.zip downloads (time, Cloudflare country/region/city, device, browser, user agent - no IP address)
 - optional "Get updates" emails from the extension page
-- resumes shared by users who tick the optional, unticked-by-default consent checkbox
+- resumes shared by users who tick the required, unticked-by-default sharing checkbox
 - anonymous analysis stats (score, job title/company, missing keywords, region)
 
 The admin panel is at `/admin` and needs an email + password login. Admin accounts live in the
@@ -72,3 +72,4 @@ change your password. The old `/admin-downloads?key=...` link is retired and red
 First-time setup on a fresh deployment: set a one-time `ADMIN_SEED` Worker secret of the form
 `email|pbkdf2$100000$<salt_b64>$<hash_b64>`. It is only used while `admin_users` is empty and can be
 deleted after the first admin exists.
+
