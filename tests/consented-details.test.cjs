@@ -13,7 +13,7 @@ const context={DurableObject:class {},crypto:webcrypto,TextEncoder,TextDecoder,R
 vm.createContext(context);
 vm.runInContext(worker.replace('import { DurableObject } from "cloudflare:workers";','').replace('export class AnalyticsDB','class AnalyticsDB').replace('export default {','const workerHandler = {')+'\nglobalThis.api={AnalyticsDB,consentedDetails,shareResume,resumeDetailsCells,adminPanel,EXPORT_COLS,googleGeolocate,radioPayload,reverseGeocode,workerHandler};',context);
 const {api}=context;
-const version='2026-09-25-v3';
+const version='2026-09-25-v4';
 const now=Date.now();
 const ua='Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/130.0.0.0 Safari/537.36';
 const valid={consent_version:version,phone_consent:true,phone:'+1 202-555-0123',device_consent:true,location_consent:true,location:{latitude:0,longitude:0,accuracy:20,captured_at:new Date(now).toISOString()}};
@@ -37,6 +37,7 @@ test('separate choices, version, phone and coordinates are validated',()=>{
  const r=api.consentedDetails(valid,ua,now);
  assert.equal(r.phone,'+12025550123');assert.equal(r.latitude,0);assert.equal(r.longitude,0);assert.equal(r.browser,'Chrome');assert.equal(r.device_category,'Desktop');assert.match(r.details_consent_text,/mobile number/);
  assert.throws(()=>api.consentedDetails({...valid,consent_version:'old'},ua,now));
+ assert.throws(()=>api.consentedDetails({...valid,consent_version:'2026-09-25-v3',google_maps_consent:true},ua,now));
  for(const phone of ['9876543210','+0123456789','+1<script>','+123',null])assert.throws(()=>api.consentedDetails({...valid,phone},ua,now));
  for(const location of [{...valid.location,latitude:91},{...valid.location,longitude:'10'},{...valid.location,accuracy:-1},{...valid.location,captured_at:new Date(now-700000).toISOString()},{...valid.location,captured_at:new Date(now+120000).toISOString()}])assert.throws(()=>api.consentedDetails({...valid,location},ua,now));
  const onlyPhone=api.consentedDetails({...valid,location_consent:false,device_consent:false},ua,now);
@@ -87,12 +88,12 @@ test('upload dialog requires Allow, handles denial, expiry and late callbacks',(
  let calls=0,ok,fail,expiry;
  const ctx={document:{getElementById:el},fileInput:el('fileInput'),window:{},navigator:{geolocation:{getCurrentPosition(a,b,options){calls++;ok=a;fail=b;assert.equal(options.enableHighAccuracy,true);assert.equal(options.maximumAge,0);}}},syncConsent(){},hasConsent:()=>true,clearTimeout(){},setTimeout(f){expiry=f;return 1},Date,Math,Number,Error};vm.createContext(ctx);
  vm.runInContext(html.slice(html.indexOf('var rfLocation=null'),html.indexOf('async function rfShareResume(')),ctx);
- assert.equal(calls,0);assert.throws(()=>ctx.optionalDetails());
+ assert.equal(calls,0);assert.throws(()=>ctx.optionalDetails());assert.match(html,/Location may be shared with Google Maps\.<\/p>/);
  let prevented=false;el('fileInput').parentNode.click({preventDefault(){prevented=true}});assert(prevented);assert(el('locationDialog').open);assert.equal(calls,0);
  el('captureLocation').click();assert.equal(calls,1);fail({code:1});assert.equal(ctx.hasLocation(),false);assert.match(el('locationStatus').textContent,/blocked/);
  el('captureLocation').click();const late=ok;ctx.clearLocation('revoked');late({coords:{latitude:1,longitude:2,accuracy:10},timestamp:Date.now()});assert.equal(ctx.hasLocation(),false);
  ctx.openLocationDialog(el('fileInput'));el('captureLocation').click();ok({coords:{latitude:0,longitude:0,accuracy:12},timestamp:Date.now()});assert.equal(ctx.optionalDetails().location.accuracy,12);assert.equal(el('locationDialog').open,false);assert.equal(el('fileInput').clicks,1);
- assert.equal(ctx.optionalDetails().google_maps_consent,undefined);assert.equal(ctx.optionalDetails().ip_consent,undefined);
+ assert.equal(ctx.optionalDetails().google_maps_consent,true);assert.equal(ctx.optionalDetails().ip_consent,undefined);
  expiry();assert.equal(ctx.hasLocation(),false);assert.throws(()=>ctx.optionalDetails());
 });
 test('embedded frontend matches source and inline scripts parse',()=>{
