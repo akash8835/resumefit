@@ -77,10 +77,42 @@ deleted after the first admin exists.
 
 ## Optional details on shared resumes
 
-The Upload step provides separate unchecked choices for mobile number, browser/device category, and a one-time browser location reading. The service works without these optional details. Phone numbers are user-entered in international format and unverified; the app does not obtain a SIM number or use OTP. Geolocation requires a user click and browser permission, records accuracy and capture time, and expires locally after ten minutes. No background tracking or reverse geocoding is used.
+The Upload step provides separate unchecked choices for mobile number, browser/device category, and a one-time browser location reading. The service works without these optional details. Phone numbers are user-entered in international format and unverified; the app does not obtain a SIM number or use OTP. Geolocation requires a user click and browser permission, records accuracy and capture time, and expires locally after ten minutes. No background tracking is used. Separately consented Google reverse geocoding is available on demand in admin.
 
-`POST /api/share-resume` accepts `submission_id` (a UUID v4 for retry deduplication) and `details` with `consent_version: "2026-09-25-v1"`, separate boolean `phone_consent`, `device_consent`, and `location_consent` flags, optional `phone`, and `location: {latitude, longitude, accuracy, captured_at}`. Only literal `true` enables a category. Unconsented values are discarded. The server validates phone format, coordinate ranges, accuracy and capture age, and stores consent wording/version plus receipt timestamps.
+`POST /api/share-resume` accepts `submission_id` (a UUID v4 for retry deduplication) and `details` with `consent_version: "2026-09-25-v2"`, separate boolean `phone_consent`, `device_consent`, and `location_consent` flags, optional `phone`, and `location: {latitude, longitude, accuracy, captured_at}`. Only literal `true` enables a category. Unconsented values are discarded. The server validates phone format, coordinate ranges, accuracy and capture age, and stores consent wording/version plus receipt timestamps.
 
 The authenticated Shared resumes admin tab and its CSV/JSON exports include these fields. Coordinates, device descriptions and phone numbers are not verified identities. Existing databases receive additive nullable columns; historic submissions show Not shared. Submissions are no longer deduplicated by resume text, so one person's contact details cannot overwrite another's. Removing a shared resume removes its optional details too. Unchecking a choice affects future submissions; deletion of existing records uses the existing contact/admin deletion flow.
 
 Run `node --test tests/consented-details.test.cjs` for backend, migration, admin escaping, export and frontend consent checks. Run `node build.mjs` before deployment to embed the frontend.
+
+## Google location integrations
+
+The website continues to use browser Geolocation with `enableHighAccuracy: true`, explicit permission, and a visible accuracy value. None of these services guarantees exact coordinates or a verified home address.
+
+### Activate Google services
+
+1. In your Google Cloud project, enable billing, **Geolocation API** and **Geocoding API**.
+2. Create a server API key restricted to those two APIs, with application restrictions appropriate to your Worker egress setup. Do not put it in HTML, GitHub, or chat.
+3. From an authenticated local project terminal, run `npx wrangler secret put GOOGLE_MAPS_API_KEY` and enter the key in the prompt. Alternatively add that name as a Secret in the Worker's Cloudflare settings.
+4. Optional Worker variable `GOOGLE_MAPS_DAILY_LIMIT` defaults to 100 combined provider calls/day; configure Google Cloud quotas too. The service also limits lookups per IP/hour.
+5. Deploy the updated Worker. Without the key, browser capture/upload still works and Google lookups show a configuration message.
+
+**Admin reverse geocoding:** a separate unchecked Google Maps choice allows sharing coordinates with Google. The Shared resumes tab then offers `View on Google Maps` and `Look up address`. Lookup is an authenticated, same-origin POST keyed by resume ID, never a public coordinate proxy. Older records without Google consent cannot be looked up. Returned addresses are escaped, attributed to Google Maps, served with `no-store`, and are not saved in SQLite or included in exports. Address lookup does not improve coordinate accuracy.
+
+**Google Geolocation:** `POST /api/geolocation/google` is implemented for a native/device client that can legitimately obtain radio signals with permission. A normal webpage cannot scan Wi-Fi BSSIDs or cell towers; no such scanner/native client is included in this web project. Browser uploads therefore use browser location and do not call this endpoint. A supported client must present its own explicit opt-in explaining that radio signals are sent to Google, then send:
+
+```json
+{
+  "consent_version": "2026-09-25-v2",
+  "location_consent": true,
+  "google_radio_consent": true,
+  "wifiAccessPoints": [
+    {"macAddress": "REAL_STATIONARY_AP_BSSID_1", "signalStrength": -55},
+    {"macAddress": "REAL_STATIONARY_AP_BSSID_2", "signalStrength": -65}
+  ]
+}
+```
+
+Alternatively supply `radioType` (`gsm`, `wcdma`, `lte`, `nr`) and valid `cellTowers` per Google's schema. The example deliberately contains placeholders, not fabricated real signal data. The endpoint validates signals, forces `considerIp: false` so it never returns the Cloudflare server's IP location, applies timeouts/quotas, and returns only coordinates, accuracy and attribution. Radio input and results are not stored by this endpoint or automatically attached to a resume. This device-client integration remains a prerequisite for using Google Geolocation beyond the ordinary browser capture.
+
+Official references: https://developers.google.com/maps/documentation/geolocation/requests-geolocation and https://developers.google.com/maps/documentation/geocoding/requests-reverse-geocoding
