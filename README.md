@@ -75,19 +75,21 @@ deleted after the first admin exists.
 
 
 
-## Optional details on shared resumes
+## Required location before resume upload
 
-The Upload step provides separate unchecked choices for mobile number, browser/device category, and a one-time browser location reading. The service works without these optional details. Phone numbers are user-entered in international format and unverified; the app does not obtain a SIM number or use OTP. Geolocation requires a user click and browser permission, records accuracy and capture time, and expires locally after ten minutes. No background tracking is used. Separately consented Google reverse geocoding is available on demand in admin.
+After the existing resume-sharing checkbox is enabled, clicking either resume upload control opens a compact dialog: “Allow location access”, “Location access is required to upload your resume”, and **Allow**. Allow requests genuine browser location permission. There is no Not now button; dismissing the dialog never bypasses the upload gate. Denial, timeout, unsupported geolocation, revoked permission and expired readings keep upload locked. A successful reading enables upload. If a browser suppresses the file picker after its asynchronous permission response, click Upload again. Saved resumes and processing endpoints require a fresh reading too.
 
-`POST /api/share-resume` accepts `submission_id` (a UUID v4 for retry deduplication) and `details` with `consent_version: "2026-09-25-v2"`, separate boolean `phone_consent`, `device_consent`, and `location_consent` flags, optional `phone`, and `location: {latitude, longitude, accuracy, captured_at}`. Only literal `true` enables a category. Unconsented values are discarded. The server validates phone format, coordinate ranges, accuracy and capture age, and stores consent wording/version plus receipt timestamps.
+This flow uses a one-time high-accuracy browser request; accuracy is device-dependent and never guaranteed exact. Coordinates, accuracy and capture time are stored with the resume as described in the linked Privacy Policy. No mobile-number field, IP storage, device opt-in, or automatic Google sharing is included. Legacy separately consented data remains available in admin. Readings expire locally after ten minutes. Browser Block cannot be removed.
 
-The authenticated Shared resumes admin tab and its CSV/JSON exports include these fields. Coordinates, device descriptions and phone numbers are not verified identities. Existing databases receive additive nullable columns; historic submissions show Not shared. Submissions are no longer deduplicated by resume text, so one person's contact details cannot overwrite another's. Removing a shared resume removes its optional details too. Unchecking a choice affects future submissions; deletion of existing records uses the existing contact/admin deletion flow.
+`POST /api/share-resume` accepts `submission_id` (a UUID v4 for retry deduplication) and `details` with `consent_version: "2026-09-25-v3"`, separate boolean `phone_consent`, `device_consent`, and `location_consent` flags, optional `phone`, and `location: {latitude, longitude, accuracy, captured_at}`. `location_consent: true` and fresh valid coordinates are required by resume-sharing and processing endpoints. Only literal `true` enables a category. Unconsented values are discarded. The server validates phone format, coordinate ranges, accuracy and capture age, and stores consent wording/version plus receipt timestamps.
+
+The authenticated Shared resumes admin tab and its CSV/JSON exports include these fields. Coordinates, device descriptions and phone numbers are not verified identities. Existing databases receive additive nullable columns; historic submissions show Not shared. Submissions are no longer deduplicated by resume text, so one person's contact details cannot overwrite another's. Removing a shared resume removes its attached details too. Revoking browser permission prevents further capture; deletion of existing records uses the existing contact/admin deletion flow.
 
 Run `node --test tests/consented-details.test.cjs` for backend, migration, admin escaping, export and frontend consent checks. Run `node build.mjs` before deployment to embed the frontend.
 
 ## Google location integrations
 
-The website continues to use browser Geolocation with `enableHighAccuracy: true`, explicit permission, and a visible accuracy value. None of these services guarantees exact coordinates or a verified home address.
+The website continues to use browser Geolocation with `enableHighAccuracy: true`, explicit permission, and recorded accuracy. None of these services guarantees exact coordinates or a verified home address.
 
 ### Activate Google services
 
@@ -103,7 +105,7 @@ The website continues to use browser Geolocation with `enableHighAccuracy: true`
 
 ```json
 {
-  "consent_version": "2026-09-25-v2",
+  "consent_version": "2026-09-25-v3",
   "location_consent": true,
   "google_radio_consent": true,
   "wifiAccessPoints": [
