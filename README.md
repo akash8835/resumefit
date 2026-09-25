@@ -73,3 +73,14 @@ First-time setup on a fresh deployment: set a one-time `ADMIN_SEED` Worker secre
 `email|pbkdf2$100000$<salt_b64>$<hash_b64>`. It is only used while `admin_users` is empty and can be
 deleted after the first admin exists.
 
+
+
+## Optional details on shared resumes
+
+The Upload step provides separate unchecked choices for mobile number, browser/device category, and a one-time browser location reading. The service works without these optional details. Phone numbers are user-entered in international format and unverified; the app does not obtain a SIM number or use OTP. Geolocation requires a user click and browser permission, records accuracy and capture time, and expires locally after ten minutes. No background tracking or reverse geocoding is used.
+
+`POST /api/share-resume` accepts `submission_id` (a UUID v4 for retry deduplication) and `details` with `consent_version: "2026-09-25-v1"`, separate boolean `phone_consent`, `device_consent`, and `location_consent` flags, optional `phone`, and `location: {latitude, longitude, accuracy, captured_at}`. Only literal `true` enables a category. Unconsented values are discarded. The server validates phone format, coordinate ranges, accuracy and capture age, and stores consent wording/version plus receipt timestamps.
+
+The authenticated Shared resumes admin tab and its CSV/JSON exports include these fields. Coordinates, device descriptions and phone numbers are not verified identities. Existing databases receive additive nullable columns; historic submissions show Not shared. Submissions are no longer deduplicated by resume text, so one person's contact details cannot overwrite another's. Removing a shared resume removes its optional details too. Unchecking a choice affects future submissions; deletion of existing records uses the existing contact/admin deletion flow.
+
+Run `node --test tests/consented-details.test.cjs` for backend, migration, admin escaping, export and frontend consent checks. Run `node build.mjs` before deployment to embed the frontend.
