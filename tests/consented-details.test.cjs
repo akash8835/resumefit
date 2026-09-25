@@ -16,7 +16,7 @@ const {api}=context;
 const version='2026-09-25-v4';
 const now=Date.now();
 const ua='Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/130.0.0.0 Safari/537.36';
-const valid={consent_version:version,phone_consent:true,phone:'+1 202-555-0123',device_consent:true,location_consent:true,location:{latitude:0,longitude:0,accuracy:20,captured_at:new Date(now).toISOString()}};
+const valid={consent_version:version,phone_consent:true,phone:'+1 202-555-0123',location_consent:true,location:{latitude:0,longitude:0,accuracy:20,captured_at:new Date(now).toISOString()}};
 function database(){
  const sqlite=new DatabaseSync(':memory:');
  const sql={exec(query,...params){const st=sqlite.prepare(query);if(st.columns().length)return {toArray:()=>st.all(...params)};st.run(...params);return {toArray:()=>[]};}};
@@ -29,19 +29,19 @@ function request(extra={}){return new Request('https://example.test/api/share-re
 
 test('optional values without literal consent are discarded',()=>{
  for(const flag of [undefined,false,'true',1]){
- const r=api.consentedDetails({...valid,phone_consent:flag,device_consent:flag,location_consent:flag},ua,now);
+ const r=api.consentedDetails({...valid,phone_consent:flag,location_consent:flag},ua,now);
  assert(Object.values(r).every(v=>v===null));
  }
 });
 test('separate choices, version, phone and coordinates are validated',()=>{
  const r=api.consentedDetails(valid,ua,now);
- assert.equal(r.phone,'+12025550123');assert.equal(r.latitude,0);assert.equal(r.longitude,0);assert.equal(r.browser,'Chrome');assert.equal(r.device_category,'Desktop');assert.match(r.details_consent_text,/mobile number/);
+ assert.equal(r.phone,'+12025550123');assert.equal(r.latitude,0);assert.equal(r.longitude,0);assert.match(r.details_consent_text,/mobile number/);
  assert.throws(()=>api.consentedDetails({...valid,consent_version:'old'},ua,now));
  assert.throws(()=>api.consentedDetails({...valid,consent_version:'2026-09-25-v3',google_maps_consent:true},ua,now));
  for(const phone of ['9876543210','+0123456789','+1<script>','+123',null])assert.throws(()=>api.consentedDetails({...valid,phone},ua,now));
  for(const location of [{...valid.location,latitude:91},{...valid.location,longitude:'10'},{...valid.location,accuracy:-1},{...valid.location,captured_at:new Date(now-700000).toISOString()},{...valid.location,captured_at:new Date(now+120000).toISOString()}])assert.throws(()=>api.consentedDetails({...valid,location},ua,now));
- const onlyPhone=api.consentedDetails({...valid,location_consent:false,device_consent:false},ua,now);
- assert.equal(onlyPhone.latitude,null);assert.equal(onlyPhone.browser,null);assert.equal(onlyPhone.location_consent_ts,null);
+ const onlyPhone=api.consentedDetails({...valid,location_consent:false},ua,now);
+ assert.equal(onlyPhone.latitude,null);assert.equal(onlyPhone.location_consent_ts,null);
 });
 test('migration is additive, repeatable, and preserves historic records',()=>{
  const {db,sql,sqlite}=database();
@@ -53,7 +53,7 @@ test('API stores opted-in details; retries deduplicate without merging people',a
  assert.equal((await api.shareResume(request({details:valid,submission_id:id}),env)).status,200);
  assert.equal((await api.shareResume(request({details:valid,submission_id:id}),env)).status,200);
  assert.equal(db.exportTable('shared_resumes').length,2);
- const stored=db.exportTable('shared_resumes')[1];assert.equal(stored.phone,'+12025550123');assert.equal(stored.latitude,0);assert.equal(stored.browser,'Chrome');assert(stored.phone_consent_ts);
+ const stored=db.exportTable('shared_resumes')[1];assert.equal(stored.phone,'+12025550123');assert.equal(stored.latitude,0);assert(stored.phone_consent_ts);
  await api.shareResume(request({details:{...valid,phone:'+12025550124'},submission_id:webcrypto.randomUUID()}),env);
  assert.equal(db.exportTable('shared_resumes').length,3);assert.equal(db.exportTable('shared_resumes')[1].phone,'+12025550123');
  const rows=db.report().resumes;assert(rows.some(r=>r.phone==='+12025550124'));
@@ -77,7 +77,7 @@ test('processing endpoints reject bypassing required location',async()=>{
  }
 });
 test('admin details escape content and exports require login',async()=>{
- const cells=api.resumeDetailsCells({...api.consentedDetails(valid,ua,now),device:'<script>alert(1)</script>'});
+ const cells=api.resumeDetailsCells({...api.consentedDetails(valid,ua,now),phone:'<script>alert(1)</script>'});
  assert(!cells.includes('<script>'));assert(cells.includes('&lt;script&gt;'));assert(cells.includes('unverified'));assert(cells.includes('0.000000, 0.000000'));
  assert.match(api.resumeDetailsCells({}),/Not shared/);
  const response=await api.adminPanel(new Request('https://example.test/admin?format=export&table=shared_resumes'),{});
