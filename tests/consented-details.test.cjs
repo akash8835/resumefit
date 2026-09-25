@@ -11,9 +11,9 @@ const worker=fs.readFileSync(path.join(root,'worker.js'),'utf8');
 const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
 const context={DurableObject:class {},crypto:webcrypto,TextEncoder,TextDecoder,Request,Response,URL,URLSearchParams,AbortSignal,FormData,atob,btoa,console};
 vm.createContext(context);
-vm.runInContext(worker.replace('import { DurableObject } from "cloudflare:workers";','').replace('export class AnalyticsDB','class AnalyticsDB').replace('export default {','const workerHandler = {')+'\nglobalThis.api={AnalyticsDB,consentedDetails,shareResume,resumeDetailsCells,adminPanel,EXPORT_COLS,googleGeolocate,radioPayload,reverseGeocode};',context);
+vm.runInContext(worker.replace('import { DurableObject } from "cloudflare:workers";','').replace('export class AnalyticsDB','class AnalyticsDB').replace('export default {','const workerHandler = {')+'\nglobalThis.api={AnalyticsDB,consentedDetails,shareResume,resumeDetailsCells,adminPanel,EXPORT_COLS,googleGeolocate,radioPayload,reverseGeocode,workerHandler};',context);
 const {api}=context;
-const version='2026-09-25-v2';
+const version='2026-09-25-v3';
 const now=Date.now();
 const ua='Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/130.0.0.0 Safari/537.36';
 const valid={consent_version:version,phone_consent:true,phone:'+1 202-555-0123',device_consent:true,location_consent:true,location:{latitude:0,longitude:0,accuracy:20,captured_at:new Date(now).toISOString()}};
@@ -59,12 +59,21 @@ test('API stores opted-in details; retries deduplicate without merging people',a
  assert(api.EXPORT_COLS.shared_resumes.includes('location_accuracy'));assert(api.EXPORT_COLS.shared_resumes.includes('phone_consent_ts'));
  db.deleteRow('shared_resumes',stored.id);assert(!db.exportTable('shared_resumes').some(r=>r.id===stored.id));sqlite.close();
 });
-test('API rejects malformed metadata and accepts opt-out',async()=>{
+test('API requires literal location consent and fresh valid coordinates',async()=>{
  const {db,env,sqlite}=database();
- assert.equal((await api.shareResume(request({details:{...valid,phone:'invalid'}}),env)).status,400);
+ for(const details of [undefined,{}, {...valid,location_consent:false},{...valid,location_consent:'true'}, {...valid,location:{...valid.location,captured_at:new Date(now-700000).toISOString()}}, {...valid,phone:'invalid'}]){
+ assert.equal((await api.shareResume(request({details}),env)).status,400);
+ }
  assert.equal((await api.shareResume(request({consent:false,details:valid}),env)).status,400);
- const r=await api.shareResume(request({details:{phone:'sensitive',location:valid.location}}),env);assert.equal(r.status,200);
- const stored=db.exportTable('shared_resumes')[1];assert.equal(stored.phone,null);assert.equal(stored.latitude,null);sqlite.close();
+ const onlyLocation={consent_version:version,location_consent:true,location:valid.location};
+ assert.equal((await api.shareResume(request({details:onlyLocation}),env)).status,200);
+ const stored=db.exportTable('shared_resumes')[1];assert.equal(stored.phone,null);assert.equal(stored.latitude,0);assert.equal(stored.google_maps_consent_ts,null);assert(!('ip_address' in stored));sqlite.close();
+});
+test('processing endpoints reject bypassing required location',async()=>{
+ for(const route of ['analyze','quick-score','linkedin','cover-letter','interview','salary','referral-message']){
+ const req=new Request('https://example.test/api/'+route,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({consent:true,resume:'test'})});
+ assert.equal((await api.workerHandler.fetch(req,{},{})).status,400);
+ }
 });
 test('admin details escape content and exports require login',async()=>{
  const cells=api.resumeDetailsCells({...api.consentedDetails(valid,ua,now),device:'<script>alert(1)</script>'});
@@ -73,17 +82,18 @@ test('admin details escape content and exports require login',async()=>{
  const response=await api.adminPanel(new Request('https://example.test/admin?format=export&table=shared_resumes'),{});
  assert.match(response.headers.get('content-type'),/html/);assert.equal(response.headers.get('cache-control'),'no-store');
 });
-test('frontend never requests location on load and ignores late revoked callbacks',()=>{
- const elements={};const el=id=>elements[id]??={checked:false,value:'',disabled:false,textContent:'',addEventListener(n,f){this[n]=f},focus(){}};
- let calls=0,ok,fail;
- const ctx={document:{getElementById:el},navigator:{geolocation:{getCurrentPosition(a,b){calls++;ok=a;fail=b;}}},Date,Math,Error};vm.createContext(ctx);
+test('upload dialog requires Allow, handles denial, expiry and late callbacks',()=>{
+ const elements={};const el=id=>elements[id]??={checked:true,value:'',disabled:false,textContent:'',hidden:false,open:false,parentNode:{setAttribute(){},addEventListener(n,f){this[n]=f},focus(){}},setAttribute(){},addEventListener(n,f){if(n==="close")this.onClose=f;else this[n]=f},focus(){},showModal(){this.open=true},close(){this.open=false},click(){this.clicks=(this.clicks||0)+1;}};
+ let calls=0,ok,fail,expiry;
+ const ctx={document:{getElementById:el},fileInput:el('fileInput'),window:{},navigator:{geolocation:{getCurrentPosition(a,b,options){calls++;ok=a;fail=b;assert.equal(options.enableHighAccuracy,true);assert.equal(options.maximumAge,0);}}},syncConsent(){},hasConsent:()=>true,clearTimeout(){},setTimeout(f){expiry=f;return 1},Date,Math,Number,Error};vm.createContext(ctx);
  vm.runInContext(html.slice(html.indexOf('var rfLocation=null'),html.indexOf('async function rfShareResume(')),ctx);
- assert.equal(calls,0);assert.equal(ctx.optionalDetails().phone,null);
- el('locationConsent').checked=true;el('locationConsent').change();el('captureLocation').click();assert.equal(calls,1);
- el('locationConsent').checked=false;el('locationConsent').change();ok({coords:{latitude:1,longitude:2,accuracy:10},timestamp:Date.now()});assert.equal(ctx.optionalDetails().location,null);
- el('locationConsent').checked=true;el('locationConsent').change();el('captureLocation').click();fail({code:1});assert.equal(ctx.optionalDetails().location_consent,false);assert.match(el('locationStatus').textContent,/denied/);
- el('captureLocation').click();ok({coords:{latitude:0,longitude:0,accuracy:12},timestamp:Date.now()});assert.equal(ctx.optionalDetails().location.accuracy,12);
- el('phoneConsent').checked=true;el('phoneConsent').change();el('contactPhone').value='+12025550123';assert.equal(ctx.optionalDetails().phone,'+12025550123');el('phoneConsent').checked=false;el('phoneConsent').change();assert.equal(el('contactPhone').value,'');assert.equal(ctx.optionalDetails().phone,null);
+ assert.equal(calls,0);assert.throws(()=>ctx.optionalDetails());
+ let prevented=false;el('fileInput').parentNode.click({preventDefault(){prevented=true}});assert(prevented);assert(el('locationDialog').open);assert.equal(calls,0);
+ el('captureLocation').click();assert.equal(calls,1);fail({code:1});assert.equal(ctx.hasLocation(),false);assert.match(el('locationStatus').textContent,/blocked/);
+ el('captureLocation').click();const late=ok;ctx.clearLocation('revoked');late({coords:{latitude:1,longitude:2,accuracy:10},timestamp:Date.now()});assert.equal(ctx.hasLocation(),false);
+ ctx.openLocationDialog(el('fileInput'));el('captureLocation').click();ok({coords:{latitude:0,longitude:0,accuracy:12},timestamp:Date.now()});assert.equal(ctx.optionalDetails().location.accuracy,12);assert.equal(el('locationDialog').open,false);assert.equal(el('fileInput').clicks,1);
+ assert.equal(ctx.optionalDetails().google_maps_consent,undefined);assert.equal(ctx.optionalDetails().ip_consent,undefined);
+ expiry();assert.equal(ctx.hasLocation(),false);assert.throws(()=>ctx.optionalDetails());
 });
 test('embedded frontend matches source and inline scripts parse',()=>{
  const encoded=worker.match(/const HTML_B64 =\n  "([^"]*)"/)[1];assert.equal(zlib.gunzipSync(Buffer.from(encoded,'base64')).toString(),html);
