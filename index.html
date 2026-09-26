@@ -213,6 +213,61 @@ pre.resume[contenteditable]{outline:none}pre.resume[contenteditable]:focus{borde
 .fc-btn{transition:transform .2s,bottom .3s}
 body.exitpop-open .fc-btn{bottom:150px}
 @media(max-width:640px){body.exitpop-open .fc-btn{bottom:160px}}
+
+/* Resume builder */
+.builder-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
+@media(max-width:900px){.builder-grid{grid-template-columns:1fr}}
+.b-sec{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:14px}
+.b-sec>h3{font-size:13px;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin:0 0 10px;font-weight:700}
+.b-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.b-row.single{grid-template-columns:1fr}
+@media(max-width:520px){.b-row{grid-template-columns:1fr}}
+.b-in,.b-ta{width:100%;background:rgba(0,0,0,.25);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:10px 12px;font-size:14px;font-family:inherit;transition:border-color .2s,box-shadow .2s}
+.b-in:focus,.b-ta:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(124,140,255,.18)}
+.b-ta{min-height:84px;resize:vertical}
+.b-entry{border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:10px;background:rgba(255,255,255,.02)}
+.b-entry-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.b-entry-head span{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.b-del{background:none;border:1px solid var(--border);color:var(--red);border-radius:8px;padding:4px 10px;font-size:12px;cursor:pointer}
+.b-del:hover{border-color:var(--red)}
+.b-add{background:rgba(124,140,255,.08);border:1.5px dashed rgba(124,140,255,.45);color:#c7cdf5;border-radius:10px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;width:100%}
+.b-add:hover{border-color:var(--accent);color:#fff}
+.tpl-picker{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.tpl-opt{border:1.5px solid var(--border);border-radius:12px;padding:12px 10px;cursor:pointer;text-align:center;background:var(--card);transition:all .2s}
+.tpl-opt.active{border-color:var(--accent);box-shadow:0 0 0 3px rgba(124,140,255,.18)}
+.tpl-opt b{display:block;font-size:13px;margin-top:8px}
+.tpl-opt span{font-size:11px;color:var(--muted)}
+.tpl-mini{height:84px;border-radius:6px;background:#fff;padding:8px;overflow:hidden}
+.tpl-mini i{display:block;border-radius:2px;margin-bottom:4px}
+.b-preview-wrap{position:sticky;top:16px}
+@media(max-width:900px){.b-preview-wrap{position:static}}
+.b-preview{background:#fff;color:#1a1d29;border-radius:12px;padding:28px 26px;min-height:640px;font-size:12px;line-height:1.5;box-shadow:0 12px 40px rgba(0,0,0,.35)}
+.b-preview h1{font-size:22px;margin:0}
+.b-preview .pv-title{font-size:12.5px;margin:2px 0 6px}
+.b-preview .pv-contact{font-size:10.5px;color:#444}
+.b-preview h4{font-size:11px;letter-spacing:1.6px;text-transform:uppercase;margin:14px 0 6px;padding-bottom:3px}
+.b-preview .pv-item{margin-bottom:9px}
+.b-preview .pv-line1{display:flex;justify-content:space-between;gap:10px;font-size:12px}
+.b-preview .pv-sub{font-size:11px;color:#444}
+.b-preview .pv-desc{font-size:11px;color:#222;margin-top:3px;white-space:pre-wrap}
+.b-preview.tpl-classic{font-family:Georgia,"Times New Roman",serif;text-align:left}
+.b-preview.tpl-classic h1{font-family:Georgia,serif;text-align:center;letter-spacing:.5px}
+.b-preview.tpl-classic .pv-title,.b-preview.tpl-classic .pv-contact{text-align:center}
+.b-preview.tpl-classic h4{border-bottom:1.5px solid #1a1d29;color:#1a1d29}
+.b-preview.tpl-modern{font-family:Helvetica,Arial,sans-serif}
+.b-preview.tpl-modern h1{color:#2f54eb}
+.b-preview.tpl-modern .pv-title{color:#2f54eb;font-weight:600}
+.b-preview.tpl-modern h4{color:#2f54eb;border-bottom:1.5px solid #d7e0ff}
+.b-preview.tpl-minimal{font-family:Helvetica,Arial,sans-serif;color:#222}
+.b-preview.tpl-minimal h1{font-weight:300;letter-spacing:1px}
+.b-preview.tpl-minimal h4{color:#666;border:none;font-weight:600;letter-spacing:2.5px}
+.b-preview .pv-empty{color:#9aa3bd;font-size:12px;text-align:center;padding:60px 20px}
+.b-verify{max-width:520px;margin:0 auto}
+.b-status{font-size:13px;margin-top:8px;min-height:18px}
+.b-status.err{color:var(--red)}.b-status.ok{color:var(--green)}
+.b-remain{font-size:12px;color:var(--muted);margin-top:8px;text-align:center}
+.otp-row{display:flex;gap:8px}
+.otp-row .b-in{flex:1}
 </style>
 </head>
 <body>
@@ -224,6 +279,7 @@ body.exitpop-open .fc-btn{bottom:150px}
 </header>
 <nav class="nav" id="mainNav" aria-label="ResumeFit sections">
 <button data-view="analyze" class="active">Analyze</button>
+<button data-view="builder">Make your resume</button>
 <button data-view="compare">Bulk compare</button>
 <button data-view="linkedin">LinkedIn optimizer</button>
 <button data-view="tracker">Tracker<span class="count" id="trackerCount">0</span></button>
@@ -461,6 +517,50 @@ body.exitpop-open .fc-btn{bottom:150px}
 <li>No login. The extension itself does not track you - the job text goes straight into the app in your browser. We only count downloads of the zip (time, country/region, device).</li>
 </ul>
 <p class="note">Save a resume in <b>My resumes</b> first so the one-click flow skips the upload step.</p>
+</div>
+</div>
+</div>
+<div class="view" id="view-builder">
+<div class="view-head"><h2>Make your resume</h2><p>Build a clean, ATS-safe resume in minutes - pick a template, fill in your details, download the PDF. 2 free resumes per verified email.</p></div>
+<div class="card b-verify" id="bGate">
+<h2>Verify your email to start</h2>
+<p class="hint" style="margin-bottom:12px">We email you a 6-digit code. One verified email gets 2 free resume downloads - this keeps the tool free for everyone.</p>
+<div class="otp-row"><input type="email" class="b-in" id="bEmail" placeholder="you@example.com" autocomplete="email"><button class="mini" id="bSendOtp" style="padding:10px 16px">Send code</button></div>
+<div id="bOtpRow" style="display:none;margin-top:10px">
+<div class="otp-row"><input type="text" class="b-in" id="bOtp" placeholder="6-digit code" inputmode="numeric" maxlength="6" autocomplete="one-time-code"><button class="mini" id="bVerifyOtp" style="padding:10px 16px;background:var(--grad);border:none;color:#fff">Verify</button></div>
+</div>
+<div class="b-status" id="bGateStatus" role="status"></div>
+</div>
+<div id="bMain" style="display:none">
+<div class="hero-badge" style="margin-bottom:14px"><i></i><span id="bPlanNote">Free plan: 2 resumes per verified email.</span></div>
+<div class="b-sec">
+<h3>Template</h3>
+<div class="tpl-picker" id="bTpls"></div>
+</div>
+<div class="builder-grid">
+<div>
+<div class="b-sec"><h3>Contact</h3>
+<div class="b-row single"><input class="b-in" id="bcName" placeholder="Full name *" maxlength="80"></div>
+<div class="b-row single"><input class="b-in" id="bcTitle" placeholder="Job title / headline (e.g. Aspiring Product Manager)" maxlength="100"></div>
+<div class="b-row"><input class="b-in" id="bcEmail" placeholder="Email" maxlength="100"><input class="b-in" id="bcPhone" placeholder="Phone" maxlength="30"></div>
+<div class="b-row"><input class="b-in" id="bcLoc" placeholder="City, Country" maxlength="80"><input class="b-in" id="bcLink" placeholder="LinkedIn / portfolio link" maxlength="140"></div>
+</div>
+<div class="b-sec"><h3>Summary</h3>
+<textarea class="b-ta" id="bcSummary" placeholder="2-3 lines: who you are, what you are good at, what you want." maxlength="900"></textarea>
+</div>
+<div class="b-sec"><h3>Experience</h3><div id="bExpList"></div><button class="b-add" id="bExpAdd">+ Add experience</button></div>
+<div class="b-sec"><h3>Education</h3><div id="bEduList"></div><button class="b-add" id="bEduAdd">+ Add education</button></div>
+<div class="b-sec"><h3>Skills</h3>
+<textarea class="b-ta" id="bcSkills" placeholder="Comma separated: SQL, Excel, Market research, Figma" maxlength="600"></textarea>
+</div>
+<div class="b-sec"><h3>Projects</h3><div id="bProjList"></div><button class="b-add" id="bProjAdd">+ Add project</button></div>
+</div>
+<div class="b-preview-wrap">
+<div class="b-preview tpl-modern" id="bPreview"></div>
+<button class="go" id="bDownload" style="margin-top:14px">Download PDF</button>
+<div class="b-remain" id="bRemain"></div>
+<div class="b-status" id="bDlStatus" role="status" style="text-align:center"></div>
+</div>
 </div>
 </div>
 </div>
@@ -876,6 +976,7 @@ function showView(name){
   if(name==="resumes")renderResumes();
   if(name==="compare")fillResumeSelect($("cmpResume"));
   if(name==="linkedin")fillResumeSelect($("liResume"));
+  if(name==="builder")initBuilder();
   window.scrollTo({top:0,behavior:"smooth"});
 }
 for(var n=0;n<navBtns.length;n++)navBtns[n].addEventListener("click",function(){showView(this.getAttribute("data-view"));});
@@ -1477,6 +1578,288 @@ $("ctSend").addEventListener("click",function(){
       .catch(function(){btn.disabled=false;note.textContent="Network error - please try again.";note.classList.add("err");note.style.display="block";});
   });
 })();
+
+/* ---------- Resume builder ---------- */
+var B_TPLS={
+  modern:{id:"modern",name:"Modern",desc:"Blue accents, clean sans-serif",font:"helvetica",accent:[47,84,235],headerRule:[215,224,255],nameAlign:"left",nameSize:22,nameStyle:"bold"},
+  classic:{id:"classic",name:"Classic",desc:"Traditional serif, centered header",font:"times",accent:[20,24,36],headerRule:[20,24,36],nameAlign:"center",nameSize:20,nameStyle:"bold"},
+  minimal:{id:"minimal",name:"Minimal",desc:"Light, airy, lots of space",font:"helvetica",accent:[90,90,90],headerRule:null,nameAlign:"left",nameSize:20,nameStyle:"normal"}
+};
+var bData=null,bReady=false;
+function bDefault(){return {tpl:"modern",name:"",title:"",email:"",phone:"",loc:"",link:"",summary:"",skills:"",exp:[],edu:[],proj:[]};}
+function bLoad(){if(bData)return;var d=load("rf_builder_draft",null);bData=d&&typeof d==="object"?Object.assign(bDefault(),d):bDefault();}
+function bSave(){save("rf_builder_draft",bData);}
+function bSession(){try{return JSON.parse(sessionStorage.getItem("rf_builder_session")||"null");}catch(e){return null;}}
+function bSetSession(email){try{sessionStorage.setItem("rf_builder_session",JSON.stringify({email:email}));}catch(e){}}
+
+function bPlainText(d){
+  var out=[];
+  out.push((d.name||"").toUpperCase());
+  if(d.title)out.push(d.title);
+  var c=[d.email,d.phone,d.loc,d.link].filter(function(x){return x&&x.trim();}).join(" | ");
+  if(c)out.push(c);
+  if(d.summary&&d.summary.trim())out.push("\nSUMMARY\n"+d.summary.trim());
+  var exps=d.exp.filter(function(e){return (e.role||"")+(e.company||"")+(e.desc||"");});
+  if(exps.length)out.push("\nEXPERIENCE\n"+exps.map(function(e){
+    return (e.role||"")+(e.company?" - "+e.company:"")+(e.dates?" ("+e.dates+")":"")+(e.desc?"\n"+e.desc:"");
+  }).join("\n\n"));
+  var edus=d.edu.filter(function(e){return (e.degree||"")+(e.inst||"")+(e.details||"");});
+  if(edus.length)out.push("\nEDUCATION\n"+edus.map(function(e){
+    return (e.degree||"")+(e.inst?" - "+e.inst:"")+(e.dates?" ("+e.dates+")":"")+(e.details?"\n"+e.details:"");
+  }).join("\n\n"));
+  if(d.skills&&d.skills.trim())out.push("\nSKILLS\n"+d.skills.trim());
+  var projs=d.proj.filter(function(p){return (p.name||"")+(p.desc||"");});
+  if(projs.length)out.push("\nPROJECTS\n"+projs.map(function(p){
+    return (p.name||"")+(p.link?" ("+p.link+")":"")+(p.desc?"\n"+p.desc:"");
+  }).join("\n\n"));
+  return out.join("\n").trim();
+}
+
+/* BUILDER_PDF_ENGINE_START */
+function buildResumePdf(d,tplId){
+  var t=B_TPLS[tplId]||B_TPLS.modern;
+  var doc=newPdf(),W=doc.internal.pageSize.getWidth(),H=doc.internal.pageSize.getHeight(),M=52,maxW=W-2*M,y=M;
+  var f=t.font,ac=t.accent;
+  function need(h){if(y+h>H-M){doc.addPage();y=M;}}
+  function line(txt,size,style,color,align,gap){
+    txt=pdfSafe(txt);if(!txt)return;
+    doc.setFont(f,style||"normal");doc.setFontSize(size);
+    if(color)doc.setTextColor(color[0],color[1],color[2]);else doc.setTextColor(30,30,30);
+    var x=M,opts={};
+    if(align==="center"){x=W/2;opts={align:"center"};}
+    if(align==="right"){x=W-M;opts={align:"right"};}
+    doc.text(txt,x,y,opts);
+    y+=gap||Math.round(size*1.35);
+  }
+  function wrap(txt,size,color,indent,gapAfter){
+    txt=pdfSafe(txt);if(!txt||!txt.trim())return;
+    doc.setFont(f,"normal");doc.setFontSize(size);
+    if(color)doc.setTextColor(color[0],color[1],color[2]);else doc.setTextColor(40,40,40);
+    txt.split(/\r?\n/).forEach(function(p){
+      if(!p.trim()){y+=6;return;}
+      var bullet=/^\s*[-*\u2022]/.test(p);
+      var body=p.replace(/^\s*[-*\u2022]\s*/,"");
+      var lines=doc.splitTextToSize(body,maxW-(indent||0)-(bullet?12:0));
+      need(lines.length*Math.round(size*1.3)+2);
+      if(bullet){doc.text("-",M+(indent||0),y);doc.text(lines,M+(indent||0)+12,y);}
+      else doc.text(lines,M+(indent||0),y);
+      y+=lines.length*Math.round(size*1.3);
+    });
+    y+=gapAfter==null?3:gapAfter;
+  }
+  function header(title){
+    need(34);y+=8;
+    doc.setFont(f,"bold");doc.setFontSize(11);
+    doc.setTextColor(ac[0],ac[1],ac[2]);
+    doc.text(pdfSafe(title.toUpperCase()),M,y);
+    if(t.headerRule){doc.setDrawColor(t.headerRule[0],t.headerRule[1],t.headerRule[2]);doc.setLineWidth(1);doc.line(M,y+4,W-M,y+4);}
+    y+=16;
+  }
+  function itemHead(left,right){
+    need(18);
+    doc.setFont(f,"bold");doc.setFontSize(11);doc.setTextColor(25,25,25);
+    doc.text(pdfSafe(left),M,y);
+    if(right){doc.setFont(f,"normal");doc.setFontSize(9.5);doc.setTextColor(110,110,110);doc.text(pdfSafe(right),W-M,y,{align:"right"});}
+    y+=15;
+  }
+  function contactBits(){
+    return [d.email,d.phone,d.loc,d.link].filter(function(x){return x&&x.trim();}).map(function(x){return x.trim();}).join("  |  ");
+  }
+  line(d.name||"Your Name",t.nameSize,t.nameStyle,ac,t.nameAlign,Math.round(t.nameSize*1.25));
+  if(d.title)line(d.title,12,tplId==="classic"?"italic":"normal",tplId==="minimal"?[80,80,80]:ac,t.nameAlign,17);
+  var cb=contactBits();
+  if(cb){doc.setFont(f,"normal");doc.setFontSize(9.5);doc.setTextColor(90,90,90);
+    var cl=doc.splitTextToSize(pdfSafe(cb),maxW);
+    cl.forEach(function(one){need(14);doc.text(one,t.nameAlign==="center"?W/2:M,y,t.nameAlign==="center"?{align:"center"}:{});y+=13;});}
+  y+=2;
+  doc.setDrawColor(200,200,200);doc.setLineWidth(.6);doc.line(M,y,W-M,y);y+=4;
+  if(d.summary&&d.summary.trim()){header("Summary");wrap(d.summary,10.5,null,0,4);}
+  var exps=d.exp.filter(function(e){return (e.role||"")+(e.company||"")+(e.desc||"");});
+  if(exps.length){header("Experience");
+    exps.forEach(function(e){
+      itemHead(e.role||"Role",e.dates||"");
+      if(e.company)line(e.company,10,"normal",[90,90,90],"left",14);
+      wrap(e.desc,10.5,null,0,6);
+    });}
+  var edus=d.edu.filter(function(e){return (e.degree||"")+(e.inst||"")+(e.details||"");});
+  if(edus.length){header("Education");
+    edus.forEach(function(e){
+      itemHead(e.degree||"Degree",e.dates||"");
+      if(e.inst)line(e.inst,10,"normal",[90,90,90],"left",14);
+      wrap(e.details,10.5,null,0,6);
+    });}
+  if(d.skills&&d.skills.trim()){header("Skills");wrap(d.skills.split(",").map(function(s){return s.trim();}).filter(Boolean).join("  |  "),10.5,null,0,4);}
+  var projs=d.proj.filter(function(p){return (p.name||"")+(p.desc||"");});
+  if(projs.length){header("Projects");
+    projs.forEach(function(p){
+      itemHead(p.name||"Project",p.link||"");
+      wrap(p.desc,10.5,null,0,6);
+    });}
+  return doc;
+}
+/* BUILDER_PDF_ENGINE_END */
+
+function bEntryHtml(kind,i){
+  if(kind==="exp")return '<div class="b-entry"><div class="b-entry-head"><span>Experience '+(i+1)+'</span><button class="b-del" data-del="exp" data-i="'+i+'">Remove</button></div>'+
+    '<div class="b-row"><input class="b-in" data-k="exp" data-f="role" data-i="'+i+'" placeholder="Role / title" maxlength="80"><input class="b-in" data-k="exp" data-f="company" data-i="'+i+'" placeholder="Company" maxlength="80"></div>'+
+    '<div class="b-row single"><input class="b-in" data-k="exp" data-f="dates" data-i="'+i+'" placeholder="Dates (e.g. Jun 2023 - Present)" maxlength="40"></div>'+
+    '<textarea class="b-ta" data-k="exp" data-f="desc" data-i="'+i+'" placeholder="What you did - one point per line, start with action verbs" maxlength="1200"></textarea></div>';
+  if(kind==="edu")return '<div class="b-entry"><div class="b-entry-head"><span>Education '+(i+1)+'</span><button class="b-del" data-del="edu" data-i="'+i+'">Remove</button></div>'+
+    '<div class="b-row"><input class="b-in" data-k="edu" data-f="degree" data-i="'+i+'" placeholder="Degree (e.g. B.Tech, BBA)" maxlength="80"><input class="b-in" data-k="edu" data-f="inst" data-i="'+i+'" placeholder="Institution" maxlength="100"></div>'+
+    '<div class="b-row single"><input class="b-in" data-k="edu" data-f="dates" data-i="'+i+'" placeholder="Years (e.g. 2021 - 2025)" maxlength="30"></div>'+
+    '<textarea class="b-ta" data-k="edu" data-f="details" data-i="'+i+'" placeholder="Optional: CGPA, relevant coursework, achievements" maxlength="400"></textarea></div>';
+  return '<div class="b-entry"><div class="b-entry-head"><span>Project '+(i+1)+'</span><button class="b-del" data-del="proj" data-i="'+i+'">Remove</button></div>'+
+    '<div class="b-row"><input class="b-in" data-k="proj" data-f="name" data-i="'+i+'" placeholder="Project name" maxlength="80"><input class="b-in" data-k="proj" data-f="link" data-i="'+i+'" placeholder="Link (optional)" maxlength="120"></div>'+
+    '<textarea class="b-ta" data-k="proj" data-f="desc" data-i="'+i+'" placeholder="What it does, your role, the outcome" maxlength="800"></textarea></div>';
+}
+function bRenderEntries(){
+  ["exp","edu","proj"].forEach(function(k){
+    var list=$("b"+k.charAt(0).toUpperCase()+k.slice(1)+"List");
+    list.innerHTML=bData[k].map(function(_,i){return bEntryHtml(k,i);}).join("");
+    bData[k].forEach(function(e,i){
+      list.querySelectorAll('[data-k="'+k+'"][data-i="'+i+'"]').forEach(function(inp){inp.value=e[inp.getAttribute("data-f")]||"";});
+    });
+  });
+}
+function bCollect(){
+  ["name","title","email","phone","loc","link","summary","skills"].forEach(function(f){var el=$("bc"+f.charAt(0).toUpperCase()+f.slice(1));if(el)bData[f]=el.value;});
+  document.querySelectorAll("#bMain [data-k]").forEach(function(inp){
+    var k=inp.getAttribute("data-k"),i=parseInt(inp.getAttribute("data-i"),10),f=inp.getAttribute("data-f");
+    if(bData[k][i])bData[k][i][f]=inp.value;
+  });
+  bSave();
+}
+function bPreview(){
+  var p=$("bPreview"),d=bData;
+  var exps=d.exp.filter(function(e){return (e.role||"")+(e.company||"")+(e.desc||"");});
+  var edus=d.edu.filter(function(e){return (e.degree||"")+(e.inst||"")+(e.details||"");});
+  var projs=d.proj.filter(function(x){return (x.name||"")+(x.desc||"");});
+  p.className="b-preview tpl-"+d.tpl;
+  var contact=[d.email,d.phone,d.loc,d.link].filter(function(x){return x&&x.trim();}).map(function(x){return esc(x.trim());}).join(" &nbsp;|&nbsp; ");
+  var html="";
+  if(!d.name&&!d.summary&&!exps.length&&!edus.length&&!d.skills){html='<div class="pv-empty">Your resume preview appears here as you type.</div>';p.innerHTML=html;return;}
+  html+="<h1>"+esc(d.name||"Your Name")+"</h1>";
+  if(d.title)html+='<div class="pv-title">'+esc(d.title)+"</div>";
+  if(contact)html+='<div class="pv-contact">'+contact+"</div>";
+  function sec(t,inner){return inner?("<h4>"+t+"</h4>"+inner):"";}
+  if(d.summary&&d.summary.trim())html+=sec("Summary",'<div class="pv-desc">'+esc(d.summary)+"</div>");
+  if(exps.length)html+=sec("Experience",exps.map(function(e){
+    return '<div class="pv-item"><div class="pv-line1"><b>'+esc(e.role||"Role")+"</b><span>"+esc(e.dates||"")+"</span></div>"+(e.company?'<div class="pv-sub">'+esc(e.company)+"</div>":"")+(e.desc?'<div class="pv-desc">'+esc(e.desc)+"</div>":"")+"</div>";
+  }).join(""));
+  if(edus.length)html+=sec("Education",edus.map(function(e){
+    return '<div class="pv-item"><div class="pv-line1"><b>'+esc(e.degree||"Degree")+"</b><span>"+esc(e.dates||"")+"</span></div>"+(e.inst?'<div class="pv-sub">'+esc(e.inst)+"</div>":"")+(e.details?'<div class="pv-desc">'+esc(e.details)+"</div>":"")+"</div>";
+  }).join(""));
+  if(d.skills&&d.skills.trim())html+=sec("Skills",'<div class="pv-desc">'+esc(d.skills.split(",").map(function(s){return s.trim();}).filter(Boolean).join("  |  "))+"</div>");
+  if(projs.length)html+=sec("Projects",projs.map(function(pr){
+    return '<div class="pv-item"><div class="pv-line1"><b>'+esc(pr.name||"Project")+"</b><span>"+esc(pr.link||"")+"</span></div>"+(pr.desc?'<div class="pv-desc">'+esc(pr.desc)+"</div>":"")+"</div>";
+  }).join(""));
+  p.innerHTML=html;
+}
+function bRenderTpls(){
+  var box=$("bTpls");
+  box.innerHTML=Object.keys(B_TPLS).map(function(id){
+    var t=B_TPLS[id];
+    var bar=id==="modern"?"#2f54eb":(id==="classic"?"#1a1d29":"#bbb");
+    return '<div class="tpl-opt'+(bData.tpl===id?" active":"")+'" data-tpl="'+id+'"><div class="tpl-mini">'+
+      '<i style="height:8px;width:55%;background:'+bar+(id==="classic"?';margin-left:auto;margin-right:auto':"")+'"></i>'+
+      '<i style="height:3px;width:75%;background:#ddd'+(id==="classic"?';margin-left:auto;margin-right:auto':"")+'"></i>'+
+      '<i style="height:5px;width:40%;background:'+bar+'"></i>'+
+      '<i style="height:3px;width:92%;background:#e5e5e5"></i><i style="height:3px;width:88%;background:#e5e5e5"></i><i style="height:3px;width:90%;background:#e5e5e5"></i>'+
+      '<i style="height:5px;width:40%;background:'+bar+'"></i>'+
+      '<i style="height:3px;width:92%;background:#e5e5e5"></i><i style="height:3px;width:85%;background:#e5e5e5"></i>'+
+      '</div><b>'+t.name+"</b><span>"+t.desc+"</span></div>";
+  }).join("");
+  box.querySelectorAll("[data-tpl]").forEach(function(el){el.addEventListener("click",function(){bData.tpl=this.getAttribute("data-tpl");bSave();bRenderTpls();bPreview();});});
+}
+function bGateMsg(msg,cls){var s=$("bGateStatus");s.textContent=msg;s.className="b-status "+(cls||"");}
+function bShowMain(status){
+  $("bGate").style.display="none";$("bMain").style.display="";
+  bLoad();
+  ["name","title","email","phone","loc","link","summary","skills"].forEach(function(f){var el=$("bc"+f.charAt(0).toUpperCase()+f.slice(1));if(el)el.value=bData[f]||"";});
+  bRenderTpls();bRenderEntries();bPreview();
+  if(status)bUpdateRemain(status.remaining);
+  if(!bData.exp.length)bData.exp.push({role:"",company:"",dates:"",desc:""}),bRenderEntries();
+  if(!bData.edu.length)bData.edu.push({degree:"",inst:"",dates:"",details:""}),bRenderEntries();
+}
+function bUpdateRemain(rem){
+  $("bPlanNote").textContent=rem==null?"Free plan: 2 resumes per verified email.":("Free plan: 2 resumes per verified email - you have "+rem+" left.");
+  $("bRemain").textContent=rem==null?"":(rem+" of 2 free resumes left for this email");
+  $("bDownload").disabled=rem===0;
+  if(rem===0)$("bDlStatus").textContent="Limit reached: 2 resumes per verified email.",$("bDlStatus").className="b-status err";
+}
+function initBuilder(){
+  if(bReady)return;bReady=true;
+  bLoad();
+  var sess=bSession();
+  if(sess&&sess.email){
+    fetch("/api/builder/status",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({email:sess.email})})
+      .then(function(r){return r.json();})
+      .then(function(d){if(d.verified)bShowMain(d);})
+      .catch(function(){});
+  }
+  $("bSendOtp").addEventListener("click",function(){
+    var em=$("bEmail").value.trim();
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em)){bGateMsg("Enter a valid email.","err");return;}
+    this.disabled=true;bGateMsg("Sending code...","");
+    fetch("/api/builder/otp/send",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({email:em})})
+      .then(function(r){return r.json().then(function(d){return{ok:r.ok,d:d};});})
+      .then(function(res){
+        $("bSendOtp").disabled=false;
+        if(!res.ok){bGateMsg(res.d.error||"Could not send the code. Try again.","err");return;}
+        $("bOtpRow").style.display="";$("bOtp").focus();
+        bGateMsg("Code sent to "+em+" - check your inbox (and spam). It expires in 10 minutes.","ok");
+      })
+      .catch(function(){$("bSendOtp").disabled=false;bGateMsg("Network error - try again.","err");});
+  });
+  $("bVerifyOtp").addEventListener("click",function(){
+    var em=$("bEmail").value.trim(),code=$("bOtp").value.trim();
+    if(!/^\d{6}$/.test(code)){bGateMsg("Enter the 6-digit code.","err");return;}
+    this.disabled=true;bGateMsg("Verifying...","");
+    fetch("/api/builder/otp/verify",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({email:em,code:code})})
+      .then(function(r){return r.json().then(function(d){return{ok:r.ok,d:d};});})
+      .then(function(res){
+        $("bVerifyOtp").disabled=false;
+        if(!res.ok){bGateMsg(res.d.error||"Wrong code.","err");return;}
+        bSetSession(em.toLowerCase());
+        bShowMain(res.d);
+        toast("Email verified - start building");
+      })
+      .catch(function(){$("bVerifyOtp").disabled=false;bGateMsg("Network error - try again.","err");});
+  });
+  $("bExpAdd").addEventListener("click",function(){bCollect();bData.exp.push({role:"",company:"",dates:"",desc:""});bSave();bRenderEntries();});
+  $("bEduAdd").addEventListener("click",function(){bCollect();bData.edu.push({degree:"",inst:"",dates:"",details:""});bSave();bRenderEntries();});
+  $("bProjAdd").addEventListener("click",function(){bCollect();bData.proj.push({name:"",link:"",desc:""});bSave();bRenderEntries();});
+  $("bMain").addEventListener("click",function(e){
+    var del=e.target.closest("[data-del]");if(!del)return;
+    bCollect();
+    bData[del.getAttribute("data-del")].splice(parseInt(del.getAttribute("data-i"),10),1);
+    bSave();bRenderEntries();bPreview();
+  });
+  $("bMain").addEventListener("input",function(){bCollect();bPreview();});
+  $("bDownload").addEventListener("click",function(){
+    bCollect();
+    var st=$("bDlStatus");
+    if(!bData.name.trim()){st.textContent="Add your full name first.";st.className="b-status err";return;}
+    var sess=bSession();if(!sess||!sess.email){st.textContent="Verify your email first.";st.className="b-status err";return;}
+    this.disabled=true;st.textContent="Preparing your PDF...";st.className="b-status";
+    fetch("/api/builder/download",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({email:sess.email})})
+      .then(function(r){return r.json().then(function(d){return{ok:r.ok,d:d};});})
+      .then(function(res){
+        $("bDownload").disabled=false;
+        if(!res.ok){
+          if(res.d.remaining===0){bUpdateRemain(0);return;}
+          st.textContent=res.d.error||"Could not download right now.";st.className="b-status err";return;
+        }
+        var doc=buildResumePdf(bData,bData.tpl);
+        doc.save(slug(bData.name)+"-resume.pdf");
+        saveResumeVersion("Built resume - "+bData.name.trim(),bPlainText(bData),"builder-"+bData.tpl+".pdf");
+        st.textContent="PDF downloaded.";st.className="b-status ok";
+        bUpdateRemain(res.d.remaining);
+        toast("Resume PDF downloaded");
+      })
+      .catch(function(){$("bDownload").disabled=false;st.textContent="Network error - try again.";st.className="b-status err";});
+  });
+}
 updateCounts();renderSavedPicker();handleHash();
 })();
 
