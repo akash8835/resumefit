@@ -191,6 +191,25 @@ pre.resume[contenteditable]{outline:none}pre.resume[contenteditable]:focus{borde
 @media(max-width:520px){.fc-panel{right:8px;left:8px;bottom:70px;width:auto;max-width:none;height:calc(100vh - 92px);height:calc(100dvh - 92px);max-height:none;border-radius:16px}.fc-btn{right:12px;bottom:12px;padding:12px 16px}.fc-in{padding:10px 10px calc(10px + env(safe-area-inset-bottom,0px))}}
 .study li{margin-bottom:8px}
 .qa .model{margin-top:8px;padding:10px 12px;border-left:3px solid var(--accent);background:rgba(124,140,255,.07);border-radius:8px;font-size:13.5px;line-height:1.55}
+
+/* Exit-intent slim banner (AdSense-safe: once per session, easy close, no modal/interstitial) */
+.exitpop{position:fixed;left:50%;transform:translateX(-50%);bottom:14px;z-index:60;display:none;width:min(720px,calc(100% - 24px));background:linear-gradient(180deg,rgba(124,140,255,.12),rgba(139,92,246,.06)),#0d0f16;border:1px solid rgba(124,140,255,.35);border-radius:14px;padding:10px 12px 10px 16px;box-shadow:0 14px 44px rgba(0,0,0,.5);align-items:center;gap:12px}
+@keyframes exitpopIn{from{opacity:0;transform:translateX(-50%) translateY(12px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.exitpop.show{display:flex;animation:exitpopIn .3s ease both}
+.exitpop-text{font-size:14px;font-weight:600;white-space:nowrap}
+.exitpop-text b{font-family:"Sora","Inter",sans-serif;background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;font-weight:800}
+.exitpop form{display:flex;gap:8px;flex:1;min-width:0}
+.exitpop-input{flex:1;min-width:0;background:rgba(0,0,0,.30);border:1px solid var(--border);border-radius:10px;color:var(--text);padding:9px 12px;font-size:14px;font-family:inherit;transition:border-color .2s,box-shadow .2s}
+.exitpop-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(124,140,255,.18)}
+.exitpop-cta{background:var(--grad);border:none;color:#fff;border-radius:10px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit;box-shadow:0 4px 14px rgba(124,140,255,.3);transition:transform .2s,filter .2s}
+.exitpop-cta:hover{transform:translateY(-1px);filter:brightness(1.07)}
+.exitpop-cta:disabled{opacity:.55;cursor:wait;transform:none}
+.exitpop-close{width:30px;height:30px;border-radius:50%;background:var(--card2);border:1px solid var(--border);color:var(--muted);font-size:13px;line-height:1;cursor:pointer;display:grid;place-items:center;transition:all .2s;flex-shrink:0}
+.exitpop-close:hover{color:#fff;border-color:var(--accent);background:rgba(124,140,255,.14)}
+.exitpop-note{width:100%;font-size:12px;color:var(--muted);display:none}
+.exitpop-note.err{color:var(--red)}
+.exitpop-note.ok{color:var(--green);font-weight:600}
+@media(max-width:640px){.exitpop{flex-direction:column;align-items:stretch;gap:8px;padding:12px 14px}.exitpop-text{white-space:normal;font-size:13px;padding-right:32px}.exitpop form{width:100%}.exitpop .exitpop-close{position:absolute;top:8px;right:8px}}
 </style>
 </head>
 <body>
@@ -486,6 +505,15 @@ pre.resume[contenteditable]{outline:none}pre.resume[contenteditable]:focus{borde
 
 
 <footer><div style="margin-bottom:8px"><a href="#about" data-goto="about" style="color:var(--accent);text-decoration:none;margin:0 8px">About us</a><a href="#contact" data-goto="contact" style="color:var(--accent);text-decoration:none;margin:0 8px">Contact us</a><a href="#privacy" data-goto="privacy" style="color:var(--accent);text-decoration:none;margin:0 8px">Privacy Policy</a><a href="#terms" data-goto="terms" style="color:var(--accent);text-decoration:none;margin:0 8px">Terms &amp; Conditions</a></div>Free, no signup. Resume sharing with our team is required to upload and continue. A copy is stored for review and improving the analysis; resume text is also sent to the AI model. Saved resumes, history, tracker and connections stay in your browser on this device.</footer>
+</div>
+<div class="exitpop" id="exitpop" role="dialog" aria-label="Free ATS score">
+<span class="exitpop-text">Before you go - <b>check your ATS score for free</b></span>
+<form id="exitpopForm" novalidate>
+<input type="email" class="exitpop-input" id="exitpopEmail" placeholder="you@example.com" autocomplete="email" aria-label="Email address">
+<button type="submit" class="exitpop-cta">Get my free ATS score</button>
+</form>
+<span class="exitpop-note" id="exitpopNote" role="status"></span>
+<button type="button" class="exitpop-close" id="exitpopClose" aria-label="Close">&#10005;</button>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
@@ -1399,6 +1427,52 @@ $("ctSend").addEventListener("click",function(){
   location.href="mailto:ashwatthama710@gmail.com?subject="+encodeURIComponent("ResumeFit - "+topic)+"&body="+encodeURIComponent(body);
   $("ctHint").textContent="Opening your email app...";
 });
+
+/* ---------- Exit-intent banner (AdSense-safe: slim banner, once per session, easy close) ---------- */
+(function(){
+  var bar=$("exitpop");
+  if(!bar)return;
+  var touch=("ontouchstart" in window)||(window.matchMedia&&window.matchMedia("(pointer:coarse)").matches);
+  var shown=false;
+  try{shown=sessionStorage.getItem("rf_exitpop")==="1";}catch(e){}
+  function mark(){shown=true;try{sessionStorage.setItem("rf_exitpop","1");}catch(e){}}
+  function scored(){var r=$("results");return r&&r.style.display!=="none";}
+  function openPop(){
+    if(shown||scored())return;
+    mark();
+    bar.classList.add("show");
+  }
+  function closePop(){bar.classList.remove("show");}
+  if(touch){
+    var timer=setTimeout(openPop,20000);
+    window.addEventListener("scroll",function onscroll(){
+      var h=document.documentElement,range=h.scrollHeight-h.clientHeight;
+      if(range>0&&h.scrollTop/range>0.5){clearTimeout(timer);window.removeEventListener("scroll",onscroll);openPop();}
+    },{passive:true});
+  }else{
+    document.addEventListener("mouseout",function(e){if(!e.relatedTarget&&e.clientY<=8)openPop();});
+    document.addEventListener("keydown",function(e){if(e.key==="Escape")closePop();});
+  }
+  $("exitpopClose").addEventListener("click",closePop);
+  $("exitpopForm").addEventListener("submit",function(e){
+    e.preventDefault();
+    var em=$("exitpopEmail").value.trim(),note=$("exitpopNote");
+    note.className="exitpop-note";
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em)){note.textContent="Enter a valid email.";note.classList.add("err");note.style.display="block";return;}
+    var btn=bar.querySelector(".exitpop-cta");btn.disabled=true;
+    fetch("/api/subscribe",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({email:em,source:"exit-popup"}),keepalive:true})
+      .then(function(r){return r.json().catch(function(){return{};}).then(function(j){return{ok:r.ok,j:j};});})
+      .then(function(res){
+        btn.disabled=false;
+        if(!res.ok){note.textContent=(res.j&&res.j.error)||"Something went wrong - please try again.";note.classList.add("err");note.style.display="block";return;}
+        note.textContent="Done - upload your resume above and get your free ATS score.";
+        note.classList.add("ok");note.style.display="block";
+        $("exitpopForm").style.display="none";
+        setTimeout(function(){closePop();window.scrollTo({top:0,behavior:"smooth"});},1800);
+      })
+      .catch(function(){btn.disabled=false;note.textContent="Network error - please try again.";note.classList.add("err");note.style.display="block";});
+  });
+})();
 updateCounts();renderSavedPicker();handleHash();
 })();
 
