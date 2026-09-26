@@ -210,6 +210,9 @@ pre.resume[contenteditable]{outline:none}pre.resume[contenteditable]:focus{borde
 .exitpop-note.err{color:var(--red)}
 .exitpop-note.ok{color:var(--green);font-weight:600}
 @media(max-width:640px){.exitpop{flex-direction:column;align-items:stretch;gap:8px;padding:12px 14px}.exitpop-text{white-space:normal;font-size:13px;padding-right:32px}.exitpop form{width:100%}.exitpop .exitpop-close{position:absolute;top:8px;right:8px}}
+.fc-btn{transition:transform .2s,bottom .3s}
+body.exitpop-open .fc-btn{bottom:150px}
+@media(max-width:640px){body.exitpop-open .fc-btn{bottom:160px}}
 </style>
 </head>
 <body>
@@ -1441,8 +1444,9 @@ $("ctSend").addEventListener("click",function(){
     if(shown||scored())return;
     mark();
     bar.classList.add("show");
+    document.body.classList.add("exitpop-open");
   }
-  function closePop(){bar.classList.remove("show");}
+  function closePop(){bar.classList.remove("show");document.body.classList.remove("exitpop-open");}
   if(touch){
     var timer=setTimeout(openPop,20000);
     window.addEventListener("scroll",function onscroll(){
